@@ -2,10 +2,10 @@ This file provides details on how to setup the `message_md` tool JSON configurat
 
 There are several files:
 
-1. People - a row for each person you communicate with across all messaging platforms
-2. Groups - collection of People
-3. Settings - control how the tool generates the Markdown
-4. MIME Types - maps file extensions to types of files. You shouldn't need to change this
+1. `people.json` - a row for each person you communicate with across all messaging platforms
+2. `groups.json` - collection of People
+3. `settings.json` - control how the tool generates the Markdown
+4. `mimetypes.json` - maps file extensions to types of files. You shouldn't need to change this
 
 ## People
 
