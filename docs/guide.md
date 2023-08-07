@@ -1,5 +1,3 @@
-# message_md
-
 This file provides details on how to setup the `message_md` tool JSON configuration files.
 
 There are several files:
