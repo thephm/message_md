@@ -25,6 +25,7 @@ YAML_DATE = "date"
 YAML_TIME = "time"
 YAML_SERVICE_SIGNAL = "signal"
 YAML_SERVICE_SMS = "sms"
+YAML_SERVICE_LINKEDIN = "linkedin"
 TAG_CHAT = "chat"
 
 # -----------------------------------------------------------------------------
@@ -89,6 +90,8 @@ def createFolder(folder):
 # Doesn't create/append to existing file as it's not smart enough to look 
 # inside the file to see what is already there.
 #
+# Only create files for messages after `config.fromDate` if there's a date set
+#
 # Parameters:
 #
 #   - entity - a Person or a Group object
@@ -103,6 +106,9 @@ def createMarkdownFile(entity, folder, theConfig):
     for datedMessages in entity.messages:
 
         for theMessage in datedMessages.messages:
+
+            if theConfig.fromDate and (theMessage.dateStr < theConfig.fromDate):
+                continue
 
             # where the output files will go
             fileName = theMessage.dateStr + OUTPUT_FILE_EXTENSION

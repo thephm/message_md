@@ -3,12 +3,17 @@ import os
 
 import person
 import group
+from datetime import datetime
 
 import pathlib
 from pathlib import Path
 
 # config
 CONFIG_FOLDER = "config"
+STRINGS_FILE_NAME = "strings.json"
+PEOPLE_FILE_NAME  = "people.json"
+GROUPS_FILE_NAME  = "groups.json"
+MIME_TYPES_FILE_NAME = "MIMETypes.json"
 
 # not used yet, thinking about it
 class Setting:
@@ -26,16 +31,6 @@ class String:
 class Config:
     def __init__(self, fileName=""):
 
-        # find the folder where this file is
-        folder = os.path.dirname(os.path.realpath(__file__))
-        folder = os.path.join(folder, CONFIG_FOLDER)
-
-        self.STRINGS_FILE_NAME = os.path.join(folder, "strings.json")
-        self.PEOPLE_FILE_NAME  = os.path.join(folder, "people.json")
-        self.GROUPS_FILE_NAME  = os.path.join(folder, "groups.json")
-        self.MIME_TYPES_FILE_NAME = os.path.join(folder, "MIMETypes.json")
-
-        ## configuration field names (SETTINGS_FILE_NAME)
         self.SETTING_OUTPUT_FOLDER = "output-folder"
         self.SETTING_PEOPLE_SUBFOLDER = "people-subfolder"
         self.SETTING_GROUPS_SUBFOLDER = "groups-subfolder"
@@ -92,6 +87,8 @@ class Config:
         self.STR_MY_SLUG_SETTING = 22
         self.STR_COULD_NOT_COPY_MESSAGES_FILE = 23
         self.STR_COULD_NOT_FIND_A_GROUP = 24
+        self.STR_FROM_DATE = 25
+        self.STR_CONFIG_FOLDER = 26
 
         self.MAX_LEN_QUOTED_TEXT = 70
 
@@ -122,17 +119,23 @@ class Config:
         self.MIMETypes = []
 
         self.debug = False
-        self.settingsFileName = os.path.join(folder, "settings.json")
+    
+        # set the default config folder to the folder where this
+        # script was run plus 
+        folder = os.path.dirname(os.path.realpath(__file__))
+        self.configFolder = os.path.join(folder, CONFIG_FOLDER)
+
+        self.settingsFileName = "settings.json"
         self.service = ""
+        self.reversed = False
         self.fileName = fileName
-        self.messagesFile = "messages.json"
         self.language = self.ENGLISH
         self.mySlug = "NOMYSLUG"
         self.mediaSubFolder = "media"
         self.imageEmbed = True
         self.imageWidth = 450
-        self.sourceFolder = "../messages"
-        self.outputFolder = "../output"
+        self.sourceFolder = "../../messages"
+        self.outputFolder = "../../output"
         self.attachmentsSubFolder = "attachments"
         self.archiveSubFolder = "archive"
         self.peopleSubFolder = "People"
@@ -146,16 +149,22 @@ class Config:
         self.folderPerPerson = True
         self.filePerPerson = True
         self.filePerDay = True
+        self.fromDate = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
     def loadSettings(self):
 
         result = False
 
         try:
-            settingsFile = open(self.settingsFileName, 'r')
+            settingsFileName = os.path.join(self.configFolder, self.settingsFileName)
+            settingsFile = open(settingsFileName, 'r')
             self.settings = json.load(settingsFile)
             self.archiveSubFolder = os.path.join(self.sourceFolder, self.settings[self.SETTING_ARCHIVE_SUBFOLDER])
-            self.messagesFile = os.path.join(self.sourceFolder, self.settings[self.SETTING_MESSAGES_FILE])
+            
+            messagesFileName = self.settings[self.SETTING_MESSAGES_FILE]
+            if messagesFileName:
+                self.fileName = os.path.join(self.sourceFolder, messagesFileName)
+            
             self.attachmentsSubFolder = self.settings[self.SETTING_ATTACHMENTS_SUBFOLDER]
             self.outputFolder = self.settings[self.SETTING_OUTPUT_FOLDER]
             self.groupsSubFolder = self.settings[self.SETTING_GROUPS_SUBFOLDER]
@@ -199,9 +208,6 @@ class Config:
 
         return result
 
-    def setMessagesFile(fileName, self):
-        self.messagesFile = fileName
-
     def setSourceFolder(folderName, self):
         self.sourceFolder = folderName
         
@@ -209,7 +215,8 @@ class Config:
     def loadStrings(self):
 
         try:
-            stringsFile = open(self.STRINGS_FILE_NAME, 'r')
+            stringsFileName = os.path.join(self.configFolder, STRINGS_FILE_NAME)
+            stringsFile = open(stringsFileName, 'r')
 
             for line in stringsFile:
                 line = line.rstrip()
@@ -228,7 +235,8 @@ class Config:
         self.MIMETypes = False
 
         try:
-            MIMETypesFile = open(self.MIME_TYPES_FILE_NAME, 'r')
+            MIMETypesFileName = os.path.join(self.configFolder, MIME_TYPES_FILE_NAME)
+            MIMETypesFile = open(MIMETypesFileName, 'r')
             self.MIMETypes = json.load(MIMETypesFile)
         except:
             print(self.getStr(self.STR_COULD_NOT_LOAD_MIME_TYPES))
@@ -307,7 +315,8 @@ class Config:
     def loadPeople(self):
 
         try:
-            peopleFile = open(self.PEOPLE_FILE_NAME, 'r', encoding="utf-8")
+            peopleFileName = os.path.join(self.configFolder, PEOPLE_FILE_NAME)
+            peopleFile = open(peopleFileName, 'r', encoding="utf-8")
             jsonPeople = json.load(peopleFile)
 
             for jsonPerson in jsonPeople:
@@ -334,7 +343,8 @@ class Config:
     def loadGroups(self):
 
         try:
-            groupsFile = open(self.GROUPS_FILE_NAME, 'r', encoding="utf-8")
+            groupsFileName = os.path.join(self.configFolder, GROUPS_FILE_NAME)
+            groupsFile = open(groupsFileName, 'r', encoding="utf-8")
             jsonGroups = json.load(groupsFile)
 
             for jsonGroup in jsonGroups[self.GROUP_COLLECTION]:
@@ -390,7 +400,21 @@ class Config:
                     return thePerson
             except:
                 return False
-        
+            
+    # -----------------------------------------------------------------------------
+    #
+    # Lookup a person in people array from their LinkedIn ID.
+    # 
+    # -----------------------------------------------------------------------------
+    def getPersonByLinkedInId(self, id):
+
+        for thePerson in self.people:
+            try:
+                if thePerson.linkedInId == id:
+                    return thePerson
+            except:
+                return False
+            
     # get a string out of strings based on its ID
     def getStr(self, stringNumber):
 

@@ -6,13 +6,17 @@ from pathlib import Path
 
 from argparse import ArgumentParser
 from datetime import datetime
-import message
-import attachment
+import config
 import markdown
+import attachment
+import message
 
 def getArguments(theConfig):
 
     parser = ArgumentParser()
+
+    parser.add_argument("-c", "--config", dest="configFolder", default=".",
+                        help=theConfig.STR_CONFIG_FOLDER)
     
     parser.add_argument("-s", "--sourcefolder", dest="sourceFolder", default=".",
                         help=theConfig.STR_SOURCE_FOLDER)
@@ -32,38 +36,51 @@ def getArguments(theConfig):
     parser.add_argument("-d", "--debug",
                         action="store_true", dest="debug", default=False,
                         help=theConfig.STR_DONT_PRINT_DEBUG_MSGS)
-        
+    
+    parser.add_argument("-b", "--begin", dest="fromDate", default="",
+                        help=theConfig.STR_FROM_DATE)
+     
     args = parser.parse_args()
 
     return args
 
-def setup(theConfig, service):
+def setup(theConfig, service, reversed=False):
 
     loaded = False
+    init = False
 
     if len(service):
         theConfig.service = service
+
+    if reversed:
+        theConfig.reversed = True
 
     args = getArguments(theConfig)
 
     if args.debug:
         theConfig.debug = args.debug
-    
+
+    if args.configFolder:
+        theConfig.configFolder = args.configFolder
+  
     # load the default settings
     if theConfig.loadSettings():
 
         # then override them with any command line settings
-        if args.fileName:
-            theConfig.fileName = args.fileName
-    
-        if args.outputFolder:
-            theConfig.outputFolder = args.outputFolder
-        
         if args.sourceFolder:
             theConfig.sourceFolder = args.sourceFolder
 
+        if args.fileName:
+            theConfig.fileName = os.path.join(args.sourceFolder, args.fileName)
+        
+        if args.outputFolder:
+            theConfig.outputFolder = args.outputFolder
+        
         if args.mySlug:
             theConfig.mySlug = args.mySlug
+
+        if args.fromDate:
+            theConfig.fromDate = args.fromDate
 
         if theConfig.loadStrings():
             if theConfig.loadMIMETypes():
@@ -75,16 +92,25 @@ def setup(theConfig, service):
     theConfig.groupsFolder = os.path.join(theConfig.peopleFolder, theConfig.groupsSubFolder)
     
     if theConfig.debug:
+        print("configFolder: " + theConfig.configFolder)
         print("sourceFolder: " + theConfig.sourceFolder)
-        print("messages file: " + theConfig.fileName)
+        print("fileName: " + theConfig.fileName)
         print("outputFolder: " + theConfig.outputFolder)
         print("peopleFolder: " + theConfig.peopleFolder)
         print("groupsFolder: " + theConfig.groupsFolder)
+        print("fromDate: " + theConfig.fromDate)
 
-    if not loaded:
+    if loaded:
+        if not theConfig.fileName:
+            print('No messages file specified')
+        elif not os.path.exists(theConfig.fileName):
+            print('The messages file could not be found')
+        else:
+            init = True
+    else:
         print('Setup failed.')
     
-    return loaded
+    return init
 
 # -----------------------------------------------------------------------------
 #
@@ -102,7 +128,10 @@ def setup(theConfig, service):
 # -----------------------------------------------------------------------------
 def getMarkdown(theConfig, loadMessages, messages, reactions):
 
-    messagesFile = os.path.join(theConfig.sourceFolder, theConfig.fileName)
+    if not theConfig.fileName:
+        return False
+
+    messagesFile = theConfig.fileName
 
     suffix = pathlib.Path(messagesFile).suffix
 
@@ -118,7 +147,6 @@ def getMarkdown(theConfig, loadMessages, messages, reactions):
     nowStr = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%m-%S')
     fileName = theConfig.service + '_' + nowStr + suffix
     destFile = os.path.join(theConfig.archiveSubFolder, fileName)
-    print(destFile)
     try:
         if theConfig.debug:
             shutil.copy(messagesFile, destFile)
@@ -130,7 +158,7 @@ def getMarkdown(theConfig, loadMessages, messages, reactions):
             print(theConfig.getStr(theConfig.STR_COULD_NOT_MOVE_MESSAGES_FILE) + ": " + messagesFile)
         else:
             print(theConfig.getStr(theConfig.STR_COULD_NOT_COPY_MESSAGES_FILE) + ": " + messagesFile)
-        print(e)
+            print(e)
         pass
             
     if os.path.exists(destFile) and loadMessages(destFile, messages, reactions, theConfig):

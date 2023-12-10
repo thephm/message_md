@@ -56,9 +56,8 @@ class Message:
     # depends on the self.timeStamp attribute being set to valid int
     def setDateTime(self):
         try:
-            timeInSeconds = self.timeStamp/1000
             # convert the time seconds since epoch to a time.struct_time object
-            self.time = time.localtime(timeInSeconds)
+            self.time = time.localtime(self.timeStamp)
             self.dateStr = time.strftime("%Y-%m-%d", self.time)
             self.timeStr = time.strftime("%H:%M", self.time)
             result = True
@@ -100,20 +99,22 @@ def addMessages(messages, theConfig):
     me = theConfig.getMe()
     
     for theMessage in messages:
-        if len(theMessage.groupSlug):
+
+        if theMessage and len(theMessage.groupSlug):
             for group in theConfig.groups:
                 if theMessage.groupSlug == group.slug:
-                    appendMessage(theMessage, group)
+                    addMessage(theMessage, group, theConfig.reversed)
                     theMessage.processed = True
 
-        if not theMessage.processed:
+        if theMessage and not theMessage.processed:
             if theMessage.isNoteToSelf():
-                appendMessage(theMessage, me)
+                addMessage(theMessage, me, theConfig.reversed)
                 theMessage.processed = True
             else:
                 for person in theConfig.people:
+
                     if person.slug != me.slug and (person.slug == theMessage.destinationSlug or person.slug == theMessage.sourceSlug): 
-                        appendMessage(theMessage, person)
+                        addMessage(theMessage, person, theConfig.reversed)
                         theMessage.processed = True
                         break
     return
@@ -121,14 +122,18 @@ def addMessages(messages, theConfig):
 # -----------------------------------------------------------------------------
 #
 # Add the message to the group or person on the day it was sent.
+#
+# Some services export messages from newest to oldest (i.e., LinkedIn) where
+# others do what would be expected (i.e., SMS Backup, Signal)
 # 
 # Parameters:
 #
 #    message - the message to be added
 #    thing - the group or person the message is to be added to
+#    reversed - `True` if messages ordered from newest to oldest
 #
 # -----------------------------------------------------------------------------
-def appendMessage(theMessage, thing):
+def addMessage(theMessage, thing, reversed=False):
 
     dateFound = False
 
@@ -138,13 +143,19 @@ def appendMessage(theMessage, thing):
         for messagesOnDate in thing.messages:
             if theMessage.dateStr == messagesOnDate.dateStr:
                 dateFound = True
-                messagesOnDate.messages.append(theMessage)
+                if reversed:
+                    messagesOnDate.messages.insert(0, theMessage)
+                else:
+                    messagesOnDate.messages.append(theMessage)
 
         # if the date was not found, create it
         if dateFound == False:
             newDate = DatedMessages()
             newDate.dateStr = theMessage.dateStr
-            newDate.messages.append(theMessage)
+            if reversed:
+                newDate.messages.insert(0, theMessage)
+            else:
+                newDate.messages.append(theMessage)
             thing.messages.append(newDate)
 
     except Exception as e:

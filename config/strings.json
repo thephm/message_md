@@ -23,3 +23,5 @@
 {"language":"1","number":"22","text":"short label (slug) for myself e.g. `bernie`"}
 {"language":"1","number":"23","text":"could not copy the messages file to archive"}
 {"language":"1","number":"24","text":"could not find a group containing: "}
+{"language":"1","number":"25","text":"convert from date in format YYYY-MM-DD"}
+{"language":"1","number":"26","text":"the configuration folder path"}
