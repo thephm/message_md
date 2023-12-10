@@ -12,7 +12,7 @@ Argument | Alternate | Description
 ---|---|---
 `-c` | `--config` | Folder where the configuration files are
 `-s` | `--sourceFolder` | Folder where the message file is
-`-f` | `--file` | The file containing all of the messages to be converted
+`-f` | `--file` | The filename of the file containing all of the messages to be converted
 `-o` | `--outputFolder` | Where the resulting Markdown files will go
 `-l` | `--language` | UI language, defaults to English
 `-m` | `--mySlug` | Which person in the config file is me e.g. `bob`
