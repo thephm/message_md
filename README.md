@@ -1,4 +1,4 @@
-# message-md
+# message_md
 
 Code to hold `Message`s and convert them to Markdown.
  
