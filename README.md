@@ -4,6 +4,10 @@ Code to hold `Message`s and convert them to Markdown.
  
 Also includes all the supporting classes for `Person`, `Group`, `Setting`, `String`, `Config`, `Attachments` so the client code only needs to deal with the app-specific parsing of message files.
 
+## Configuration
+
+Read the [guide](docs/guide.md) to learn how to configure the library.
+
 ## Command line options
 
 Any app that uses this library will inherit these command line options.
