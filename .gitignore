@@ -1,1 +1,5 @@
 __pycache__
+config/settings-prod.json
+config/settings-dev.json
+config/settings-prod.json
+config/settings-sms.json
