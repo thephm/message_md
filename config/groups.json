@@ -1,34 +1,16 @@
 {
     "groups": [
         {
-            "id":"loNRl486wOb/Hq9nVC68YNCMXVzXBSzBxBr0J85TdUA=",
-            "slug":"wllm",
-            "description":"Work Less Laugh More",
-            "people": ["janet","bernie","ann"]
+            "id":"abc123",
+            "slug":"ckrab",
+            "description":"Crusty Krab",
+            "people": ["spongebob","mr-krabs"]
         },
         {
-            "id":"wPmRPSnq0hujafjtrzecYyod5T1v68hHjvW/ongRcUQ=",
-            "slug":"bot9",
-            "description":"Bottom of the 9",
-            "people": ["ann", "mary", "bernie", "irene", "janet"]
-        },
-        {
-            "id":"G49mXaA6ZDo+ZbSCwbU97yYnekOMtQZ8oEhXFDLy9sE=",
-            "slug":"drafters",
-            "description": "Testers for Drafting app",
-            "people": ["aj","bernie", "hien", "sahil", "sen"]
-        },
-        {
-            "id":"1",
-            "slug":"shanise-lisa-bernie",
-            "description": "Lealah lovers",
-            "people": ["shanise", "lisa", "bernie"]
-        },
-        {
-            "id":"2",
-            "slug":"bernie-carey-mario",
-            "description": "ex-Cogeco folk",
-            "people": ["bernie", "carey", "mario"]
+            "id":"def456",
+            "slug":"friends",
+            "description":"Bottom of the Sea-ers",
+            "people": ["spongebob","patrick-star"]
         }
     ]
 }

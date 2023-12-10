@@ -255,9 +255,12 @@ class Config:
             try: 
                 firstName = thePerson.firstName
             except Exception as e:   
-                print(self.getStr(self.STR_PERSON_NOT_FOUND))
+                print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + number)
                 print(e)
                 pass
+
+        if not firstName:
+            print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + number)
 
         return firstName
 
@@ -269,6 +272,9 @@ class Config:
         for thePerson in self.people:
             if thePerson.slug == slug:
                 firstName = thePerson.firstName
+
+        if not firstName:
+            print(self.getStr(self.STR_COULD_NOT_FIND_PERSON) + ": " + slug)
     
         return firstName
     
@@ -295,7 +301,7 @@ class Config:
                     found = True
                     break
 
-        if found == False:
+        if not found:
             print( self.getStr(self.STR_COULD_NOT_FIND_A_GROUP) + str(slugs))
 
         return slug
@@ -328,7 +334,9 @@ class Config:
                     thePerson.phoneNumber = jsonPerson[self.PERSON_FIELD_NUMBER]
                     thePerson.linkedInId = jsonPerson[self.PERSON_FIELD_LINKEDIN_ID]
                     self.people.append(thePerson)
-                except Exception as e:  
+                except Exception as e:
+                    print("Error loading person.")
+                    print(e)
                     pass
 
         except Exception as e:
@@ -412,8 +420,13 @@ class Config:
             try:
                 if thePerson.linkedInId == id:
                     return thePerson
-            except:
+            except Exception as e:
+                print("Error looking up person by LinkedIn ID.")
+                print(e)
                 return False
+            
+        print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + id)
+
             
     # get a string out of strings based on its ID
     def getStr(self, stringNumber):
