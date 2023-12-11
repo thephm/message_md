@@ -14,6 +14,7 @@ STRINGS_FILE_NAME = "strings.json"
 PEOPLE_FILE_NAME  = "people.json"
 GROUPS_FILE_NAME  = "groups.json"
 MIME_TYPES_FILE_NAME = "MIMETypes.json"
+RESOURCES_FOLDER = "../message_md/resources"
 
 # not used yet, thinking about it
 class Setting:
@@ -215,7 +216,7 @@ class Config:
     def loadStrings(self):
 
         try:
-            stringsFileName = os.path.join(self.configFolder, STRINGS_FILE_NAME)
+            stringsFileName = os.path.join(RESOURCES_FOLDER, STRINGS_FILE_NAME)
             stringsFile = open(stringsFileName, 'r')
 
             for line in stringsFile:
@@ -227,7 +228,7 @@ class Config:
             stringsFile.close()
         except Exception as e:
             print(e)
-
+        
         return len(self.strings)
         
     def loadMIMETypes(self):
@@ -235,7 +236,7 @@ class Config:
         self.MIMETypes = False
 
         try:
-            MIMETypesFileName = os.path.join(self.configFolder, MIME_TYPES_FILE_NAME)
+            MIMETypesFileName = os.path.join(RESOURCES_FOLDER, MIME_TYPES_FILE_NAME)
             MIMETypesFile = open(MIMETypesFileName, 'r')
             self.MIMETypes = json.load(MIMETypesFile)
         except:
@@ -274,7 +275,7 @@ class Config:
                 firstName = thePerson.firstName
 
         if not firstName:
-            print(self.getStr(self.STR_COULD_NOT_FIND_PERSON) + ": " + slug)
+            print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + slug)
     
         return firstName
     

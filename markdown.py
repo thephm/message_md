@@ -18,8 +18,8 @@ OUTPUT_FILE_EXTENSION = ".md"
 
 # YAML front matter 
 YAML_DASHES = "---" + NEW_LINE
-YAML_PERSON_SLUGS = "person-slugs"
-YAML_SERVICE_SLUG = "service-slug"
+YAML_PERSON_SLUGS = "people"
+YAML_SERVICE_SLUG = "service"
 YAML_TAGS = "tags"
 YAML_DATE = "date"
 YAML_TIME = "time"
@@ -236,11 +236,21 @@ def getFrontMatter(theMessage, mySlug, theConfig):
 def getMarkdown(theMessage, theConfig, people):
 
     text = ""
+    firstName = ""
 
     if theConfig.timeNameSeparate:
         text += NEW_LINE + theMessage.timeStr + NEW_LINE
 
-    firstName = theConfig.getFirstNameBySlug(theMessage.sourceSlug)
+    if theMessage.sourceSlug:
+        firstName = theConfig.getFirstNameBySlug(theMessage.sourceSlug)
+
+    # get cases with SMS Backup where `from_address="null"` and,
+    # in turn, can't get a source slug so we skip the message
+    if not firstName:
+        if (theConfig.debug):
+            print(theMessage.phoneNumber)
+            print(theMessage.body)
+        return text
 
     # don't include first name if Note-to-Self since I know who I am!
     if not theMessage.isNoteToSelf(): 
