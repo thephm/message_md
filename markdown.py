@@ -110,6 +110,11 @@ def createMarkdownFile(entity, folder, theConfig):
             if theConfig.fromDate and (theMessage.dateStr < theConfig.fromDate):
                 continue
 
+            # convert to Markdown and if no message, move on to the next one
+            theMarkdown = getMarkdown(theMessage, theConfig, entity)
+            if not len(theMarkdown):
+                continue
+
             # where the output files will go
             fileName = theMessage.dateStr + OUTPUT_FILE_EXTENSION
 
@@ -298,7 +303,10 @@ def getMarkdown(theMessage, theConfig, people):
             text += theReaction.emoji + "*" + firstName.lower() + "*   "
         text += NEW_LINE
 
-    text += NEW_LINE
+    if not len(theMessage.body) and not len(theMessage.reactions):
+        text = ""
+    else: 
+        text += NEW_LINE
 
     return text
 

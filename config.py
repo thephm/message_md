@@ -417,6 +417,9 @@ class Config:
     # -----------------------------------------------------------------------------
     def getPersonByLinkedInId(self, id):
 
+        if not len(id):
+            return False
+
         for thePerson in self.people:
             try:
                 if thePerson.linkedInId == id:
@@ -428,7 +431,6 @@ class Config:
             
         print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + id)
 
-            
     # get a string out of strings based on its ID
     def getStr(self, stringNumber):
 
