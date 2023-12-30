@@ -1,50 +1,46 @@
+# Guide
+
 This file provides details on how to setup the `message_md` tool JSON configuration files.
 
-There are several files:
+There are a few files that you need to setup.
 
-1. People - a row for each person you communicate with across all messaging platforms
-2. Groups - collection of People
-3. Settings - control how the tool generates the Markdown
-4. MIME Types - maps file extensions to types of files. You shouldn't need to change this
+1. `people.json` - a row for each person you communicate with across all messaging platforms
+2. `groups.json` - a collection of People
+3. `settings.json` - controls how the tool generates the Markdown
 
 ## People
 
-Add each of the people you communicate with in this file:
-
-```
-config\people.json
-```
+Add each of the people you communicate with in `config\people.json` file:
 
 with each person defined on a separate row. 
 
 ### Fields
 
-- `number` - the phone number field in the `signalmd` output file
-- `person-slug` - unique one-word label for the person
+- `person-slug` - one-word or hyphenated words uniquely identifying this person
 - `first-name` - person's first name
+- `last-name` - person's last name
+- `number` - the phone number field in the `signald` output file
+- `linkedin-id` - the last part of their LinkedIn profile URL
+- `conversation-id` - required for `signal_sqlite_md` (optional)
 
 ### Example
 
 ```
-{"number":"+14165551212","person-slug":"spongebob-squarepants","first-name":"SpongeBob"}
-{"number":"+12895551313","person-slug":"mr-krab","first-name":"Krab"}
-
+{"person-slug":"spongebob","first-name":"SpongeBob", "last-name":"SquarePants", "number":"+14165551212", "linkedin-id":"spbob", "conversation-id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"}
+{"person-slug":"mr-krabs","first-name":"Eugene", "first-name":"Krabs", "number":"+12895551313", "linkedin-id":"mrkrab", "conversation-id":"d84d84b4-41b8-4044-93a6-2b47cd347e25"}
 ```
 
 ## Groups
 
-Add the groups that you are part of in this file:
-
-```
-config\groups.json
-```
+Add the groups that you are part of into `config\groups.json`. This works for Signal and SMS group messages.
 
 ### Fields
 
 - `id` - the unique ID for this group, see **Finding the group ID**
 - `slug` - a one-word label for the group, will be used as the folder name
 - `person-slug` - a unique one-word label for each person, see **Person**
-
+- `conversation-id` - required for `signal_sqlite_md` (optional)
+ 
 ### Finding the group ID
 
 This is specific to Signal, not relevant for SMS.
@@ -106,20 +102,20 @@ The `language` setting controls which language the output strings will be in
 
 ### My slug
 
-The `my-slug` setting defines which person you are in the People config.
+The `my-slug` setting defines which person (row) represents you in `people.json`.
 
 #### Example
 
 If this was me in `people.json`:
 
 ```
-{"number":"+12265551212", "person-slug":"spongebob-squarepants","first-name":"SpongeBob"}
+{"person-slug":"spongebob","first-name":"SpongeBob", "last-name":"SquarePants", "number":"+14165551212", "linkedin-id":"spbob", "conversation-id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"}
 ```
 
 Then I would set this field as follows in `settings.json`:
 
 ```
-"my-slug": "spongebob-squarepants",
+"my-slug": "spongebob",
 ```
 
 ### Timestamp
