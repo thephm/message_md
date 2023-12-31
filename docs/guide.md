@@ -21,7 +21,7 @@ with each person defined on a separate row.
 - `last-name` - person's last name
 - `number` - the phone number field in the `signald` output file
 - `linkedin-id` - the last part of their LinkedIn profile URL
-- `conversation-id` - required for `signal_sqlite_md` (optional)
+- `conversation-id` - required for [signal_sqlite_md](https://github.com/thephm/signal_sqlite_md/tree/main)
 
 ### Example
 
@@ -36,7 +36,7 @@ Add the groups that you are part of into `config\groups.json`. This works for Si
 
 ### Fields
 
-- `id` - the unique ID for this group, see **Finding the group ID**
+- `id` - the unique ID for this group, see [Finding the group ID](#finding-the-group-id)
 - `slug` - a one-word label for the group, will be used as the folder name
 - `person-slug` - a unique one-word label for each person, see **Person**
 - `conversation-id` - required for `signal_sqlite_md` (optional)
