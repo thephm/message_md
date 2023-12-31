@@ -1,8 +1,8 @@
 # Guide
 
-This file provides details on how to setup the `message_md` tool JSON configuration files.
+This file provides details on how to setup the `message_md` library's JSON configuration files.
 
-There are a few files that you need to setup.
+There are a few files that you need to setup:
 
 1. `people.json` - a row for each person you communicate with across all messaging platforms
 2. `groups.json` - a collection of People
@@ -10,15 +10,13 @@ There are a few files that you need to setup.
 
 ## People
 
-Add each of the people you communicate with in `config\people.json` file:
-
-with each person defined on a separate row. 
+Add each of the people you communicate with into `config\people.json` file with each person defined on a separate row. 
 
 ### Fields
 
-- `person-slug` - one-word or hyphenated words uniquely identifying this person
-- `first-name` - person's first name
-- `last-name` - person's last name
+- `person-slug` - one-word or hyphenated-words uniquely identifying this person
+- `first-name` - the person's first name
+- `last-name` - the person's last name
 - `number` - the phone number field in the `signald` output file
 - `linkedin-id` - the last part of their LinkedIn profile URL
 - `conversation-id` - required for [signal_sqlite_md](https://github.com/thephm/signal_sqlite_md/tree/main)
@@ -32,7 +30,7 @@ with each person defined on a separate row.
 
 ## Groups
 
-Add the groups that you are part of into `config\groups.json`. This works for Signal and SMS group messages.
+Add the groups that you are part of into `config\groups.json`. This is for Signal and SMS group messages, not yet for LinkedIn group chats.
 
 ### Fields
 
@@ -248,15 +246,15 @@ The `source-folder` setting controls where the input `signalmd` JSON files are.
 
 ### Messages file
 
-This is the name of the file containing the JSON output from `signald` and found in the `source-folder`
+This is the name of the file containing the messages. The format of the file is specific to the client using this library and the client handles parsing this file. For example, in the case of `signal_md` it's JSON and in the case of `signal_sqlite_md` and `linkedin_md` it's CSV. The location of the file is defined in the `source-folder` setting.
 
 ### Attachments sub-folder
 
-The `attachments-subfolder` is under the `source-folder` where `signald` put the attachments. 
+The `attachments-subfolder` is under the `source-folder` where the attachment files are. 
 
 ### Archive folder
 
-The `archive-folder` is where a copy of the original messages file is placed so the messages don't get processed again
+The `archive-folder` is where a copy of the original messages file is placed so the messages don't get processed again.
 
 ### Output folder
 
@@ -273,20 +271,20 @@ The `media-subfolder` controls where the media (e.g. images) are stored.
 - empty - same folder as messages
 - a string in quotes - folder name 
 
-If this field is not in the settings file, default will be in the folder where the messages are logged.
+If this field is not in the settings file, the default will be in the folder where the messages are logged.
 
 Examples:
 
 To place media files in a subfolder called `media`, use:
 
 ```
-"media-subfolder":"media"
+"media-subfolder": "media"
 ```
 
 To place media files in same folder as the messages, use:
 
 ```
-"media-subfolder":""
+"media-subfolder": ""
 ```
 
 ### Image embed
