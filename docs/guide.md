@@ -43,7 +43,7 @@ Add the groups that you are part of into `config\groups.json`. This works for Si
  
 ### Finding the group ID
 
-This is specific to Signal, not relevant for SMS.
+This is specific to [signal_md](https://github.com/thephm/signal_md) which uses `signald`, it's not relevant for SMS. If you're using [signal_sqlite_md](https://github.com/thephm/signal_sqlite_md), that repo's `README` describes how to find the IDs.
 
 To find the unique group ID, search through the JSON output from `signald`.
 
