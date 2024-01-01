@@ -12,6 +12,8 @@ Read the [guide](docs/guide.md) to learn how to configure the library.
 
 Any app that uses this library will inherit these command line options.
 
+**IMPORTANT**: by default the begining date for the parsing is today so that it's easier (and faster) to get results and make sure everything is workling because you only have to look at a days worth of messages. Once you're ready to parse everything, use something like `-b 1970-01-01` to get all the messages.
+
 Argument | Alternate | Description
 ---|---|---
 `-c` | `--config` | Folder where the configuration files are
