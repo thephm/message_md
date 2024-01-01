@@ -23,6 +23,7 @@ class Reaction:
 # - If personSlug is non-blank, then groupSlug will be blank
 class Message:
     def __init__(self):
+        self.id = ""              # ID from the messaging system
         self.time = 0             # time.struct_time object
         self.timeStamp = 0        # original timestamp in the message
         self.dateStr = ""         # YYYY-MM-DD
@@ -41,8 +42,17 @@ class Message:
 
     def __str__(self):
         output = str(self.timeStamp)
+        output += "id: " + self.id + NEW_LINE
+        output += "timeStamp: " + str(self.timeStamp) + NEW_LINE
+        output += "dateStr: " + self.dateStr + NEW_LINE
+        output += "timeStr: " + self.timeStr + NEW_LINE
         output += "sourceSlug: " + self.sourceSlug + NEW_LINE
         output += "destinationSlug: " + self.destinationSlug + NEW_LINE
+        output += "groupSlug: " + self.groupSlug + NEW_LINE
+        output += "phoneNumber: " + self.phoneNumber + NEW_LINE
+        output += "processed: " + str(self.processed) + NEW_LINE
+        output += "# attachmemts: " + str(len(self.attachments)) + NEW_LINE
+        output += "# reactions: " + str(len(self.reactions)) + NEW_LINE
         output += "body: " + self.body
         return output
 
@@ -107,12 +117,12 @@ def addMessages(messages, theConfig):
                     theMessage.processed = True
 
         if theMessage and not theMessage.processed:
+            
             if theMessage.isNoteToSelf():
                 addMessage(theMessage, me, theConfig.reversed)
                 theMessage.processed = True
             else:
                 for person in theConfig.people:
-
                     if person.slug != me.slug and (person.slug == theMessage.destinationSlug or person.slug == theMessage.sourceSlug): 
                         addMessage(theMessage, person, theConfig.reversed)
                         theMessage.processed = True

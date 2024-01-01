@@ -1,5 +1,5 @@
 [
-    {"number":"+14165551212","person-slug":"spongebob","first-name":"SpongeBob", "linkedin-id": "sbob"},
-    {"number":"+12895551313","person-slug":"mr-krabs","first-name":"Eugene", "linkedin-id": "krabs"},
-    {"number":"+19055551414","person-slug":"patrick-star","first-name":"Patrick", "linkedin-id": "prick"}
+    {"person-slug":"spongebob", "first-name":"SpongeBob", "last-name":"SquarePants", "number":"+14165551212", "linkedin-id":"spbob", "conversation-id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"}
+    {"person-slug":"mr-krabs", "first-name":"Eugene", "last-name":"Krabs", "number":"+12895551313", "linkedin-id":"mrkrab", "conversation-id":"d84d84b4-41b8-4044-93a6-2b47cd347e25"}
+    {"person-slug":"patrick-star", "first-name":"Patrick", "last-name":"tbd", "number":"+19055551414", "linkedin-id": "prick"}
 ]

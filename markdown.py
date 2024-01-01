@@ -106,10 +106,11 @@ def createMarkdownFile(entity, folder, theConfig):
     for datedMessages in entity.messages:
 
         for theMessage in datedMessages.messages:
-
+            
             if theConfig.fromDate and (theMessage.dateStr < theConfig.fromDate):
                 continue
 
+  
             # convert to Markdown and if no message, move on to the next one
             theMarkdown = getMarkdown(theMessage, theConfig, entity)
             if not len(theMarkdown):
@@ -126,6 +127,7 @@ def createMarkdownFile(entity, folder, theConfig):
                 fileName = os.path.join(folder, fileName)
             
             exists = os.path.exists(fileName)
+
             outputFile = openOutputFile(fileName, theConfig)
             
             if outputFile:
@@ -186,7 +188,10 @@ def openOutputFile(fileName, theConfig):
 def getFrontMatter(theMessage, mySlug, theConfig):
 
     frontMatter = YAML_DASHES 
-    frontMatter += YAML_TAGS + ": [" + TAG_CHAT + "]" + NEW_LINE
+    frontMatter += YAML_TAGS + ": [" + TAG_CHAT
+    if theMessage.groupSlug:
+        frontMatter += ", " + theMessage.groupSlug
+    frontMatter += "]" + NEW_LINE
     frontMatter += YAML_PERSON_SLUGS + ": ["
     
     if not theMessage.groupSlug:
@@ -271,42 +276,50 @@ def getMarkdown(theMessage, theConfig, people):
         
     if not theConfig.timeNameSeparate: 
         text += NEW_LINE
-
+        
     for theAttachment in theMessage.attachments:
-        text += theAttachment.generateLink(theConfig)
-    
-    text += NEW_LINE + MD_QUOTE
+        link = theAttachment.generateLink(theConfig)
+        text += link
 
-    if theConfig.includeQuote and hasattr(theMessage.quote, 'text') and len(theMessage.quote.text):
+    text += NEW_LINE
     
+    try:
+        quotedText = theMessage.quote.text
         lengthOfQuotedText = len(theMessage.quote.text)
-        if lengthOfQuotedText:
-            text += MD_QUOTE + theMessage.quote.authorName + ": "
-            quotedText = theMessage.quote.text
-            if lengthOfQuotedText > theConfig.MAX_LEN_QUOTED_TEXT:
-                quotedText = quotedText.quote.text[:theConfig.MAX_LEN_QUOTED_TEXT]
-                lastSpace = quotedText.rfind(' ')
-                text += quotedText[:lastSpace] 
-                text += "..."
-            else: 
-                text += quotedText
 
-            text += NEW_LINE + MD_QUOTE + NEW_LINE + MD_QUOTE
+        if theConfig.includeQuote and hasattr(theMessage.quote, 'text') and lengthOfQuotedText:
+        
+            if lengthOfQuotedText:
+                text += MD_QUOTE + MD_QUOTE
+                if theMessage.quote.authorName:
+                    text += theMessage.quote.authorName + ": "
+                if lengthOfQuotedText > theConfig.MAX_LEN_QUOTED_TEXT:
+                    quotedText = quotedText[:theConfig.MAX_LEN_QUOTED_TEXT]
+                    lastSpace = quotedText.rfind(' ')
+                    text += quotedText[:lastSpace] 
+                    text += "..."
+                else: 
+                    text += quotedText
 
+                text += NEW_LINE + MD_QUOTE + NEW_LINE
+    except:
+        pass
+    
     if len(theMessage.body):
-        text += theMessage.body + NEW_LINE
+        text += MD_QUOTE + theMessage.body + NEW_LINE
 
     if theConfig.includeReactions and len(theMessage.reactions):
         text += MD_QUOTE + NEW_LINE + MD_QUOTE
         for theReaction in theMessage.reactions:
             firstName = theConfig.getFirstNameBySlug(theReaction.sourceSlug)
-            text += theReaction.emoji + "*" + firstName.lower() + "*   "
+            text += str(theReaction.emoji) + " *" + firstName.lower() + "*   "
         text += NEW_LINE
 
-    if not len(theMessage.body) and not len(theMessage.reactions):
-        text = ""
-    else: 
+    # can have messages with only a body or reactions or attachments
+    if len(theMessage.body) or len(theMessage.reactions):
         text += NEW_LINE
+    elif not len(theMessage.attachments): # if none of them then it's invalid
+        text = ""
 
     return text
 

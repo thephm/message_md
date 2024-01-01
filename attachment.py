@@ -9,8 +9,8 @@ NEW_LINE = "\n"
 
 class Attachment:
     def __init__(self):
-        self.type = "" # contentType
         self.id = ""
+        self.type = "" # contentType
         self.size = 0
         self.fileName = ""
         self.customFileName = ""
@@ -18,6 +18,17 @@ class Attachment:
         self.height = 0
         self.voiceNote = False
 
+    def __str__(self):
+        output = "id: " + self.id + NEW_LINE
+        output += "type: " + self.type + NEW_LINE
+        output += "size: " + str(self.size) + NEW_LINE
+        output += "fileName: " + self.fileName + NEW_LINE
+        output += "customFileName: " + self.customFileName + NEW_LINE
+        output += "width: " + str(self.width) + NEW_LINE
+        output += "height: " + str(self.height) + NEW_LINE
+        output += "voiceNote: " + str(self.voiceNote)
+        return output
+    
     def isImage(self):
         isImage = False
 
@@ -92,6 +103,7 @@ def moveAttachments(entities, folder, theConfig):
                     markdown.createFolder(destFolder)
 
                 for theAttachment in theMessage.attachments:
+                    
                     if len(theAttachment.id):
                         sourceFile = os.path.join(theConfig.sourceFolder, theConfig.attachmentsSubFolder)
                         sourceFile = os.path.join(sourceFile, theAttachment.id)

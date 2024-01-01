@@ -28,8 +28,15 @@ class String:
         self.language = 0
         self.text = ""
 
+def Config():
+    if _Config._instance is None:
+        _Config._instance = _Config()
+    return _Config._instance
+
 # keeps all of the configuration
-class Config:
+class _Config:
+    _instance = None
+
     def __init__(self, fileName=""):
 
         self.SETTING_OUTPUT_FOLDER = "output-folder"
@@ -99,6 +106,7 @@ class Config:
         self.PERSON_FIELD_FIRST_NAME = "first-name"
         self.PERSON_FIELD_LAST_NAME = "last-name"
         self.PERSON_FIELD_LINKEDIN_ID = "linkedin-id"
+        self.PERSON_FIELD_CONVERSATION_ID = "conversation-id"
 
         # fields in groups file (GROUPS_FILE_NAME)
         self.GROUP_COLLECTION = "groups"
@@ -106,6 +114,7 @@ class Config:
         self.GROUP_FIELD_SLUG = "slug"
         self.GROUP_FIELD_DESCRIPTION = "description"
         self.GROUP_FIELD_PEOPLE = "people"
+        self.GROUP_FIELD_CONVERSATION_ID = "conversation-id"
 
         # within array of person fields (after loaded)
         # #todo this is STUPID and needs to be removed!
@@ -158,6 +167,8 @@ class Config:
 
         try:
             settingsFileName = os.path.join(self.configFolder, self.settingsFileName)
+            print("settingsFileName=" + settingsFileName)
+
             settingsFile = open(settingsFileName, 'r')
             self.settings = json.load(settingsFile)
             self.archiveSubFolder = os.path.join(self.sourceFolder, self.settings[self.SETTING_ARCHIVE_SUBFOLDER])
@@ -317,7 +328,16 @@ class Config:
         
         return slug
 
+    # Lookup the group slug based on a conversation ID
+    def getGroupSlugByConversationId(self, id):
+        slug = ""
 
+        for theGroup in self.groups:
+            if theGroup.conversationId == id:
+                slug = theGroup.slug
+        
+        return slug
+    
     # load the people, returns number of people loaded
     def loadPeople(self):
 
@@ -334,6 +354,10 @@ class Config:
                     thePerson.lastName = jsonPerson[self.PERSON_FIELD_LAST_NAME]
                     thePerson.phoneNumber = jsonPerson[self.PERSON_FIELD_NUMBER]
                     thePerson.linkedInId = jsonPerson[self.PERSON_FIELD_LINKEDIN_ID]
+                    try:
+                        thePerson.conversationId = jsonPerson[self.PERSON_FIELD_CONVERSATION_ID]
+                    except:
+                        pass #not everyone will have one of these
                     self.people.append(thePerson)
                 except Exception as e:
                     print("Error loading person.")
@@ -362,6 +386,10 @@ class Config:
                     theGroup.id = jsonGroup[self.GROUP_FIELD_ID]
                     theGroup.slug = jsonGroup[self.GROUP_FIELD_SLUG]
                     theGroup.description = jsonGroup[self.GROUP_FIELD_DESCRIPTION]
+                    try:
+                        theGroup.conversationId = jsonGroup[self.GROUP_FIELD_CONVERSATION_ID]
+                    except:
+                        pass
                     try:
                         for personSlug in jsonGroup[self.GROUP_FIELD_PEOPLE]:
                             theGroup.members.append(personSlug)
@@ -404,11 +432,12 @@ class Config:
     def getPersonByNumber(self, number):
 
         for thePerson in self.people:
-            try:
-                if thePerson.phoneNumber[-10:] == number[-10:]:
-                    return thePerson
-            except:
-                return False
+            if len(thePerson.phoneNumber):
+                try:
+                    if thePerson.phoneNumber[-10:] == number[-10:]:
+                        return thePerson
+                except:
+                    return False
             
     # -----------------------------------------------------------------------------
     #
@@ -430,6 +459,34 @@ class Config:
                 return False
             
         print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + id)
+  
+    # -----------------------------------------------------------------------------
+    #
+    # Lookup a person in people array from their Conversation ID.
+    #
+    # Parameters:
+    # 
+    #   - id - conversation ID for the person
+    #
+    # Returns:
+    #   - False if no person found
+    #   - Person object if found 
+    # -----------------------------------------------------------------------------
+    def getPersonByConversationId(self, id):
+
+        if len(id):
+
+            for thePerson in self.people:
+                try:
+                    if thePerson.conversationId == id:
+                        return thePerson
+                except Exception as e:
+                    print(e)
+                    pass
+
+        print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + id)
+
+        return False
 
     # get a string out of strings based on its ID
     def getStr(self, stringNumber):
