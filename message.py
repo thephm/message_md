@@ -51,8 +51,8 @@ class Message:
         output += "groupSlug: " + self.groupSlug + NEW_LINE
         output += "phoneNumber: " + self.phoneNumber + NEW_LINE
         output += "processed: " + str(self.processed) + NEW_LINE
-        output += "# attachmemts: " + str(len(self.attachments)) + NEW_LINE
-        output += "# reactions: " + str(len(self.reactions)) + NEW_LINE
+        output += "attachmemts: " + str(len(self.attachments)) + NEW_LINE
+        output += "reactions: " + str(len(self.reactions)) + NEW_LINE
         output += "body: " + self.body
         return output
 

@@ -101,7 +101,10 @@ def setup(theConfig, service, reversed=False):
         print("fromDate: " + theConfig.fromDate)
 
     if loaded:
-        if not theConfig.fileName:
+        # email service doesn't require a messages file
+        if theConfig.service == markdown.YAML_SERVICE_EMAIL:
+            init = True
+        elif not theConfig.fileName:
             print('No messages file specified')
         elif not os.path.exists(theConfig.fileName):
             print('The messages file could not be found')
@@ -114,20 +117,19 @@ def setup(theConfig, service, reversed=False):
 
 # -----------------------------------------------------------------------------
 #
-# Set up all of the folders and then call back to loadMessages() from the 
-# client of this library to do specific message-type (e.g. SMS) loading of
-# the messages. 
+# Creates an archive subfolder and then either copies or moves - depending on 
+# configuration - the message file there, names the file with date/time, and
+# returns the file path.
 #
 # Parameters
 # 
 #   - theConfig - settings including collections of Groups of Persons
-#   - loadMessages - function that loads the messages into `messages[]`
-#   - messages - array containing all of the Messages
-#   - reactions - array containing all of the Reactions
 # 
 # -----------------------------------------------------------------------------
-def getMarkdown(theConfig, loadMessages, messages, reactions):
+def setupFolders(theConfig):
 
+    destFile = ""
+    
     if not theConfig.fileName:
         return False
 
@@ -160,21 +162,55 @@ def getMarkdown(theConfig, loadMessages, messages, reactions):
             print(theConfig.getStr(theConfig.STR_COULD_NOT_COPY_MESSAGES_FILE) + ": " + messagesFile)
             print(e)
         pass
-            
-    if os.path.exists(destFile) and loadMessages(destFile, messages, reactions, theConfig):
+
+    return destFile
+
+# -----------------------------------------------------------------------------
+#
+# Set up all of the folders and then call back to loadMessages() from the 
+# client of this library to do specific message-type (e.g. SMS) loading of
+# the messages. 
+#
+# Parameters
+# 
+#   - theConfig - settings including collections of Groups of Persons
+#   - loadMessages - function that loads the messages into `messages[]`
+#   - messages - array containing all of the Messages
+#   - reactions - array containing all of the Reactions
+# 
+# -----------------------------------------------------------------------------
+def getMarkdown(theConfig, loadMessages, messages, reactions):
+
+    destFile = ""
+
+    # email doesn't have a messages file to parse
+    if theConfig.service != markdown.YAML_SERVICE_EMAIL:
+        destFile = setupFolders(theConfig)
+
+    if theConfig.service != markdown.YAML_SERVICE_EMAIL or os.path.exists(destFile): 
         
-        message.addReactions(messages, reactions)
-        message.addMessages(messages, theConfig)
+        if loadMessages(destFile, messages, reactions, theConfig):
+            
+            # add the reactions to the corresponding messages
+            message.addReactions(messages, reactions)
 
-        attachment.moveAttachments(theConfig.people, theConfig.peopleFolder, theConfig)
-        attachment.moveAttachments(theConfig.groups, theConfig.groupsFolder, theConfig)
+            # divy up messages to the groups and people they were with
+            message.addMessages(messages, theConfig)
 
-        for thePerson in theConfig.people:
-            folder = os.path.join(theConfig.peopleFolder, thePerson.slug)
-            markdown.createMarkdownFile(thePerson, folder, theConfig)
+            # for email service, the attachments are put in the right folder 
+            # as each email attachment is processed. No need to move them 
+            if theConfig.service != markdown.YAML_SERVICE_EMAIL:
+                attachment.moveAttachments(theConfig.people, theConfig.peopleFolder, theConfig)
+                attachment.moveAttachments(theConfig.groups, theConfig.groupsFolder, theConfig)
 
-        for theGroup in theConfig.groups:
-            folder = os.path.join(theConfig.groupsFolder, theGroup.slug)
-            markdown.createMarkdownFile(theGroup, folder, theConfig)
+            # generate the Markdown for each person
+            for thePerson in theConfig.people:
+                folder = os.path.join(theConfig.peopleFolder, thePerson.slug)
+                markdown.createMarkdownFile(thePerson, folder, theConfig)
+
+            # generate the Markdown for each group
+            for theGroup in theConfig.groups:
+                folder = os.path.join(theConfig.groupsFolder, theGroup.slug)
+                markdown.createMarkdownFile(theGroup, folder, theConfig)
 
     return True

@@ -14,7 +14,7 @@ STRINGS_FILE_NAME = "strings.json"
 PEOPLE_FILE_NAME  = "people.json"
 GROUPS_FILE_NAME  = "groups.json"
 MIME_TYPES_FILE_NAME = "MIMETypes.json"
-RESOURCES_FOLDER = "../message_md/resources"
+RESOURCES_FOLDER = "../../github/message_md/resources"
 
 # not used yet, thinking about it
 class Setting:
@@ -84,7 +84,7 @@ class _Config:
         self.STR_COULD_NOT_MOVE_MESSAGES_FILE = 10
         self.STR_COULD_NOT_OPEN_MESSAGES_FILE = 11
         self.STR_COULD_CREATE_ARCHIVE_SUBFOLDER = 12
-        self.STR_PHONE_NUMBER_NOT_FOUND = 13
+        self.STR_MOBILE_NOT_FOUND = 13
         self.STR_NO_MESSAGE_BODY_OR_ATTACHMENT = 15
         self.STR_SOURCE_MESSAGE_FILE = 16
         self.STR_DONT_PRINT_DEBUG_MSGS = 17
@@ -101,10 +101,11 @@ class _Config:
         self.MAX_LEN_QUOTED_TEXT = 70
 
         # fields in people file (PEOPLE_FILE_NAME)
-        self.PERSON_FIELD_NUMBER = "number"
-        self.PERSON_FIELD_SLUG = "person-slug"
+        self.PERSON_FIELD_SLUG = "slug"
         self.PERSON_FIELD_FIRST_NAME = "first-name"
         self.PERSON_FIELD_LAST_NAME = "last-name"
+        self.PERSON_FIELD_MOBILE = "mobile"
+        self.PERSON_FIELD_EMAIL = "email"
         self.PERSON_FIELD_LINKEDIN_ID = "linkedin-id"
         self.PERSON_FIELD_CONVERSATION_ID = "conversation-id"
 
@@ -255,7 +256,7 @@ class _Config:
 
         return self.MIMETypes
     
-    # Lookup a person's first name from their phone number
+    # Lookup a person's first name from their mobile number
     def getFirstNameByNumber(self, number):
         
         global Strings
@@ -276,7 +277,7 @@ class _Config:
 
         return firstName
 
-    # Lookup a person from their phone number
+    # Lookup a person's first-name from their slug
     def getFirstNameBySlug(self, slug):
 
         firstName = ""
@@ -338,6 +339,12 @@ class _Config:
         
         return slug
     
+    # Parse the email address(es) for the person
+    def parseEmail(thePerson, data):
+        count = 0
+
+        return count
+
     # load the people, returns number of people loaded
     def loadPeople(self):
 
@@ -352,13 +359,19 @@ class _Config:
                     thePerson.slug = jsonPerson[self.PERSON_FIELD_SLUG]
                     thePerson.firstName = jsonPerson[self.PERSON_FIELD_FIRST_NAME]
                     thePerson.lastName = jsonPerson[self.PERSON_FIELD_LAST_NAME]
-                    thePerson.phoneNumber = jsonPerson[self.PERSON_FIELD_NUMBER]
+                    thePerson.mobile = jsonPerson[self.PERSON_FIELD_MOBILE]
                     thePerson.linkedInId = jsonPerson[self.PERSON_FIELD_LINKEDIN_ID]
+                    try:
+                        emailAddresses = jsonPerson[self.PERSON_FIELD_EMAIL]
+                        thePerson.emailAddresses = emailAddresses.split(";")
+                    except:
+                        pass #not everyone needs one of these
                     try:
                         thePerson.conversationId = jsonPerson[self.PERSON_FIELD_CONVERSATION_ID]
                     except:
-                        pass #not everyone will have one of these
+                        pass # not everyone will have one of these
                     self.people.append(thePerson)
+
                 except Exception as e:
                     print("Error loading person.")
                     print(e)
@@ -432,9 +445,9 @@ class _Config:
     def getPersonByNumber(self, number):
 
         for thePerson in self.people:
-            if len(thePerson.phoneNumber):
+            if len(thePerson.mobile):
                 try:
-                    if thePerson.phoneNumber[-10:] == number[-10:]:
+                    if thePerson.mobile[-10:] == number[-10:]:
                         return thePerson
                 except:
                     return False

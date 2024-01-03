@@ -18,14 +18,15 @@ OUTPUT_FILE_EXTENSION = ".md"
 
 # YAML front matter 
 YAML_DASHES = "---" + NEW_LINE
-YAML_PERSON_SLUGS = "people"
-YAML_SERVICE_SLUG = "service"
+YAML_PEOPLE = "people"
+YAML_SERVICE = "service"
 YAML_TAGS = "tags"
 YAML_DATE = "date"
 YAML_TIME = "time"
 YAML_SERVICE_SIGNAL = "signal"
 YAML_SERVICE_SMS = "sms"
 YAML_SERVICE_LINKEDIN = "linkedin"
+YAML_SERVICE_EMAIL = "email"
 TAG_CHAT = "chat"
 
 # -----------------------------------------------------------------------------
@@ -110,7 +111,6 @@ def createMarkdownFile(entity, folder, theConfig):
             if theConfig.fromDate and (theMessage.dateStr < theConfig.fromDate):
                 continue
 
-  
             # convert to Markdown and if no message, move on to the next one
             theMarkdown = getMarkdown(theMessage, theConfig, entity)
             if not len(theMarkdown):
@@ -192,7 +192,7 @@ def getFrontMatter(theMessage, mySlug, theConfig):
     if theMessage.groupSlug:
         frontMatter += ", " + theMessage.groupSlug
     frontMatter += "]" + NEW_LINE
-    frontMatter += YAML_PERSON_SLUGS + ": ["
+    frontMatter += YAML_PEOPLE + ": ["
     
     if not theMessage.groupSlug:
         frontMatter += theMessage.sourceSlug
@@ -227,7 +227,7 @@ def getFrontMatter(theMessage, mySlug, theConfig):
     frontMatter += "]" + NEW_LINE
     frontMatter += YAML_DATE + ": " + dateStr + NEW_LINE
     frontMatter += YAML_TIME + ": " + timeStr + NEW_LINE
-    frontMatter += YAML_SERVICE_SLUG + ": " + theConfig.service + NEW_LINE
+    frontMatter += YAML_SERVICE + ": " + theConfig.service + NEW_LINE
     frontMatter += YAML_DASHES + NEW_LINE
 
     return frontMatter
@@ -247,19 +247,20 @@ def getMarkdown(theMessage, theConfig, people):
 
     text = ""
     firstName = ""
+    sourceSlug = theMessage.sourceSlug
 
     if theConfig.timeNameSeparate:
         text += NEW_LINE + theMessage.timeStr + NEW_LINE
 
-    if theMessage.sourceSlug:
-        firstName = theConfig.getFirstNameBySlug(theMessage.sourceSlug)
+    if sourceSlug:
+        firstName = theConfig.getFirstNameBySlug(sourceSlug)
 
-    # get cases with SMS Backup where `from_address="null"` and,
-    # in turn, can't get a source slug so we skip the message
+    # I've seen cases with SMS Backup where `from_address="null"` and,
+    # in turn, code can't get a source slug, so we skip the message
     if not firstName:
         if (theConfig.debug):
-            print(theMessage.phoneNumber)
-            print(theMessage.body)
+            print("No first name.")
+            print(theMessage)
         return text
 
     # don't include first name if Note-to-Self since I know who I am!
