@@ -4,116 +4,17 @@ import shutil
 import pathlib
 from pathlib import Path
 
-from argparse import ArgumentParser
 from datetime import datetime
 import config
 import markdown
 import attachment
 import message
 
-def getArguments(theConfig):
-
-    parser = ArgumentParser()
-
-    parser.add_argument("-c", "--config", dest="configFolder", default=".",
-                        help=theConfig.STR_CONFIG_FOLDER)
-    
-    parser.add_argument("-s", "--sourcefolder", dest="sourceFolder", default=".",
-                        help=theConfig.STR_SOURCE_FOLDER)
-    
-    parser.add_argument("-f", "--file", dest="fileName",
-                        help=theConfig.STR_SOURCE_MESSAGE_FILE, metavar="FILE")
-    
-    parser.add_argument("-o", "--outputfolder", dest="outputFolder", default=".",
-                        help=theConfig.STR_OUTPUT_FOLDER)
-    
-    parser.add_argument("-l", "--language", dest="language", default="1",
-                        help=theConfig.STR_LANGUAGE_SETTING)
-    
-    parser.add_argument("-m", "--myslug", dest="mySlug", default="NOSLUG",
-                        help=theConfig.STR_MY_SLUG_SETTING)
-    
-    parser.add_argument("-d", "--debug",
-                        action="store_true", dest="debug", default=False,
-                        help=theConfig.STR_DONT_PRINT_DEBUG_MSGS)
-    
-    parser.add_argument("-b", "--begin", dest="fromDate", default="",
-                        help=theConfig.STR_FROM_DATE)
-     
-    args = parser.parse_args()
-
-    return args
-
 def setup(theConfig, service, reversed=False):
 
-    loaded = False
-    init = False
-
-    if len(service):
-        theConfig.service = service
-
-    if reversed:
-        theConfig.reversed = True
-
-    args = getArguments(theConfig)
-
-    if args.debug:
-        theConfig.debug = args.debug
-
-    if args.configFolder:
-        theConfig.configFolder = args.configFolder
-  
-    # load the default settings
-    if theConfig.loadSettings():
-
-        # then override them with any command line settings
-        if args.sourceFolder:
-            theConfig.sourceFolder = args.sourceFolder
-
-        if args.fileName:
-            theConfig.fileName = os.path.join(args.sourceFolder, args.fileName)
-        
-        if args.outputFolder:
-            theConfig.outputFolder = args.outputFolder
-        
-        if args.mySlug:
-            theConfig.mySlug = args.mySlug
-
-        if args.fromDate:
-            theConfig.fromDate = args.fromDate
-
-        if theConfig.loadStrings():
-            if theConfig.loadMIMETypes():
-                if theConfig.loadPeople():
-                    if theConfig.loadGroups():
-                        loaded = True
-
-    theConfig.peopleFolder = os.path.join(theConfig.outputFolder, theConfig.peopleSubFolder)
-    theConfig.groupsFolder = os.path.join(theConfig.peopleFolder, theConfig.groupsSubFolder)
+    result = theConfig.setup(service, reversed)
     
-    if theConfig.debug:
-        print("configFolder: " + theConfig.configFolder)
-        print("sourceFolder: " + theConfig.sourceFolder)
-        print("fileName: " + theConfig.fileName)
-        print("outputFolder: " + theConfig.outputFolder)
-        print("peopleFolder: " + theConfig.peopleFolder)
-        print("groupsFolder: " + theConfig.groupsFolder)
-        print("fromDate: " + theConfig.fromDate)
-
-    if loaded:
-        # email service doesn't require a messages file
-        if theConfig.service == markdown.YAML_SERVICE_EMAIL:
-            init = True
-        elif not theConfig.fileName:
-            print('No messages file specified')
-        elif not os.path.exists(theConfig.fileName):
-            print('The messages file could not be found')
-        else:
-            init = True
-    else:
-        print('Setup failed.')
-    
-    return init
+    return result
 
 # -----------------------------------------------------------------------------
 #
@@ -171,7 +72,7 @@ def setupFolders(theConfig):
 # client of this library to do specific message-type (e.g. SMS) loading of
 # the messages. 
 #
-# Parameters
+# Parameters:
 # 
 #   - theConfig - settings including collections of Groups of Persons
 #   - loadMessages - function that loads the messages into `messages[]`
@@ -187,7 +88,7 @@ def getMarkdown(theConfig, loadMessages, messages, reactions):
     if theConfig.service != markdown.YAML_SERVICE_EMAIL:
         destFile = setupFolders(theConfig)
 
-    if theConfig.service != markdown.YAML_SERVICE_EMAIL or os.path.exists(destFile): 
+    if theConfig.service == markdown.YAML_SERVICE_EMAIL or os.path.exists(destFile): 
         
         if loadMessages(destFile, messages, reactions, theConfig):
             

@@ -327,6 +327,38 @@ When set to `1` the `file-per-day` setting creates a separate file for each day 
     "file-per-day":1,
 ```
 
+## IMAP Server
+
+The IMAP server from where to retrieve emails.
+
+```
+    "imap-server": "imap.fastmail.com",
+```
+
+## email account
+
+The email account from which to retrieve emails.
+
+```
+    "email-account": "spongebob@fastmail.com",
+```
+     
+## email folder(s)
+
+A semicolon separated list of email folders from which to retrieve emails.
+
+```
+    "email-folder": "INBOX",
+```
+
+## Max messages
+
+Sets the number of messages to convert.
+
+```
+    "max-messages": 100,
+```
+
 ## Note to self
 
 There's special handling for Note-to-Self:

@@ -1,5 +1,7 @@
 import json
 import os
+    
+import markdown
 
 import person
 import group
@@ -7,6 +9,7 @@ from datetime import datetime
 
 import pathlib
 from pathlib import Path
+from argparse import ArgumentParser
 
 # config
 CONFIG_FOLDER = "config"
@@ -39,6 +42,7 @@ class _Config:
 
     def __init__(self, fileName=""):
 
+        self.SETTING_MY_SLUG = "my-slug"
         self.SETTING_OUTPUT_FOLDER = "output-folder"
         self.SETTING_PEOPLE_SUBFOLDER = "people-subfolder"
         self.SETTING_GROUPS_SUBFOLDER = "groups-subfolder"
@@ -57,6 +61,10 @@ class _Config:
         self.SETTING_FILE_PER_PERSON = "file-per-person"
         self.SETTING_FILE_PER_DAY = "file-per-day"
         self.SETTING_DAILY_NOTES_SUBFOLDER = "daily-notes-subfolder"
+        self.SETTING_IMAP_SERVER = "imap-server"
+        self.SETTING_EMAIL_FOLDERS = "email-folders"
+        self.SETTING_EMAIL_ACCOUNT = "email-account"
+        self.SETTING_MAX_MESSAGES = "max-messages"
 
         # within array of string fields (after loaded)
         self.STRINGS_LANGUAGE_INDEX = 0
@@ -97,6 +105,11 @@ class _Config:
         self.STR_COULD_NOT_FIND_A_GROUP = 24
         self.STR_FROM_DATE = 25
         self.STR_CONFIG_FOLDER = 26
+        self.STR_EMAIL_ACCOUNT = 27
+        self.STR_PASSWORD = 28
+        self.STR_IMAP_SERVER = 29
+        self.STR_EMAIL_FOLDERS = 30
+        self.STR_MAX_MESSAGES = 31
 
         self.MAX_LEN_QUOTED_TEXT = 70
 
@@ -130,6 +143,8 @@ class _Config:
         self.MIMETypes = []
 
         self.debug = False
+
+        self.me = person.Person()
     
         # set the default config folder to the folder where this
         # script was run plus 
@@ -141,7 +156,6 @@ class _Config:
         self.reversed = False
         self.fileName = fileName
         self.language = self.ENGLISH
-        self.mySlug = "NOMYSLUG"
         self.mediaSubFolder = "media"
         self.imageEmbed = True
         self.imageWidth = 450
@@ -161,6 +175,37 @@ class _Config:
         self.filePerPerson = True
         self.filePerDay = True
         self.fromDate = datetime.strftime(datetime.now(), '%Y-%m-%d')
+        self.imapServer = ""
+        self.emailAccount = ""
+        self.emailFolders = ""
+        self.password = ""
+        self.maxMessages = 10000
+
+    def __str__(self):
+        
+        output = self.SETTING_MY_SLUG + ": " + str(self.me.slug) + "\n"
+        output += "configFolder: " + str(self.configFolder) + "\n"
+        output += self.SETTING_ATTACHMENTS_SUBFOLDER + ": " + str(self.attachmentsSubFolder) + "\n"
+        output += self.SETTING_ARCHIVE_SUBFOLDER + ": " + str(self.archiveSubFolder) + "\n"
+        output += self.SETTING_OUTPUT_FOLDER + ": " + str(self.outputFolder) + "\n"
+        output += self.SETTING_MEDIA_SUBFOLDER + ": " + str(self.mediaSubFolder) + "\n"
+        output += self.SETTING_IMAGE_EMBED + ": " + str(self.imageEmbed) + "\n"
+        output += self.SETTING_IMAGE_WIDTH + ": " + str(self.imageWidth) + "\n"
+        output += self.SETTING_FOLDER_PER_PERSON + ": " + str(self.folderPerPerson) + "\n"
+        output += self.SETTING_FILE_PER_PERSON + ": " + str(self.filePerPerson) + "\n"
+        output += self.SETTING_FILE_PER_DAY + ": " + str(self.filePerDay) + "\n"
+        output += self.SETTING_INCLUDE_TIMESTAMP + ": " + str(self.includeTimestamp) + "\n"
+        output += self.SETTING_INCLUDE_REACTIONS + ": " + str(self.includeReactions) + "\n"
+        output += self.SETTING_INCLUDE_QUOTE + ": " + str(self.includeQuote) + "\n"
+        output += self.SETTING_COLON_AFTER_CONTEXT + ": " + str(self.colonAfterContext) + "\n"
+        output += self.SETTING_TIME_NAME_SEPARATE + ": " + str(self.timeNameSeparate) + "\n"
+        output += self.SETTING_DAILY_NOTES_SUBFOLDER + ": " + str(self.dailyNotesSubFolder) + "\n"
+        output += self.SETTING_IMAP_SERVER + ": " + str(self.imapServer) + "\n"
+        output += self.SETTING_EMAIL_ACCOUNT + ": " + str(self.emailAccount) + "\n"
+        output += self.SETTING_EMAIL_FOLDERS + ": " + str(self.emailFolders) + "\n"
+        output += self.SETTING_MAX_MESSAGES + ": " + str(self.maxMessages) + "\n"
+        
+        return output
 
     def loadSettings(self):
 
@@ -178,6 +223,12 @@ class _Config:
             if messagesFileName:
                 self.fileName = os.path.join(self.sourceFolder, messagesFileName)
             
+            # this can be passed on the command line
+            try:
+                self.me.slug = self.settings[self.SETTING_MY_SLUG]
+            except:
+                pass
+
             self.attachmentsSubFolder = self.settings[self.SETTING_ATTACHMENTS_SUBFOLDER]
             self.outputFolder = self.settings[self.SETTING_OUTPUT_FOLDER]
             self.groupsSubFolder = self.settings[self.SETTING_GROUPS_SUBFOLDER]
@@ -193,23 +244,15 @@ class _Config:
             self.folderPerPerson = bool(self.settings[self.SETTING_FOLDER_PER_PERSON])
             self.filePerPerson = bool(self.settings[self.SETTING_FILE_PER_PERSON])
             self.filePerDay = bool(self.settings[self.SETTING_FILE_PER_DAY])
-
-            if self.debug == True:
-                print(self.SETTING_ATTACHMENTS_SUBFOLDER + ": " + str(self.attachmentsSubFolder))
-                print(self.SETTING_ARCHIVE_SUBFOLDER + ": " + str(self.archiveSubFolder))
-                print(self.SETTING_OUTPUT_FOLDER + ": " + str(self.outputFolder))
-                print(self.SETTING_MEDIA_SUBFOLDER + ": " + str(self.mediaSubFolder))
-                print(self.SETTING_IMAGE_EMBED + ": " + str(self.imageEmbed))
-                print(self.SETTING_IMAGE_WIDTH + ": " + str(self.imageWidth))
-                print(self.SETTING_FOLDER_PER_PERSON + ": " + str(self.folderPerPerson))
-                print(self.SETTING_FILE_PER_PERSON + ": " + str(self.filePerPerson))
-                print(self.SETTING_FILE_PER_DAY + ": " + str(self.filePerDay))
-                print(self.SETTING_INCLUDE_TIMESTAMP + ": " + str(self.includeTimestamp))
-                print(self.SETTING_INCLUDE_REACTIONS + ": " + str(self.includeReactions))
-                print(self.SETTING_INCLUDE_QUOTE + ": " + str(self.includeQuote))
-                print(self.SETTING_COLON_AFTER_CONTEXT + ": " + str(self.colonAfterContext))
-                print(self.SETTING_TIME_NAME_SEPARATE + ": " + str(self.timeNameSeparate))
-                print(self.SETTING_DAILY_NOTES_SUBFOLDER + ": " + str(self.dailyNotesSubFolder))
+            
+            # these can be passed on the command line
+            try:
+                self.imapServer = self.settings[self.SETTING_IMAP_SERVER]
+                self.maxMessages = self.settings[self.SETTING_MAX_MESSAGES]
+                self.emailAccount = self.settings[self.SETTING_EMAIL_ACCOUNT]
+                self.emailFolders = self.settings[self.SETTING_EMAIL_FOLDERS]
+            except:
+                pass
 
             result = True
             settingsFile.close()
@@ -220,6 +263,155 @@ class _Config:
             pass
 
         return result
+    
+    def setMe(self, thePerson):
+        me = self.me
+        me.slug = thePerson.slug
+        me.firstName = thePerson.firstName
+        me.lastName = thePerson.lastName
+        me.mobile = thePerson.mobile
+        me.linkedInId = thePerson.linkedInId
+        me.emailAddresses = thePerson.emailAddresses
+        me.conversationId = thePerson.conversationId
+        me.folderCreated = thePerson.folderCreated
+        me.messages = []
+
+    def getArguments(self):
+
+        parser = ArgumentParser()
+
+        parser.add_argument("-c", "--config", dest="configFolder", default=".",
+                            help=self.STR_CONFIG_FOLDER)
+        
+        parser.add_argument("-s", "--sourcefolder", dest="sourceFolder", default=".",
+                            help=self.STR_SOURCE_FOLDER)
+        
+        parser.add_argument("-f", "--file", dest="fileName",
+                            help=self.STR_SOURCE_MESSAGE_FILE, metavar="FILE")
+        
+        parser.add_argument("-o", "--outputfolder", dest="outputFolder", default=".",
+                            help=self.STR_OUTPUT_FOLDER)
+        
+        parser.add_argument("-l", "--language", dest="language", default="1",
+                            help=self.STR_LANGUAGE_SETTING)
+        
+        parser.add_argument("-m", "--myslug", dest="mySlug", default="",
+                            help=self.STR_MY_SLUG_SETTING)
+        
+        parser.add_argument("-d", "--debug",
+                            action="store_true", dest="debug", default=False,
+                            help=self.STR_DONT_PRINT_DEBUG_MSGS)
+        
+        parser.add_argument("-b", "--begin", dest="fromDate", default="",
+                            help=self.STR_FROM_DATE)
+        
+        parser.add_argument("-i", "--imap", dest="imapServer", default="",
+                            help=self.STR_IMAP_SERVER)
+        
+        parser.add_argument("-e", "--email", dest="emailAccount", default="",
+                            help=self.STR_EMAIL_ACCOUNT)
+
+        parser.add_argument("-p", "--password", dest="password", default="",
+                            help=self.STR_PASSWORD)
+        
+        parser.add_argument("-r", "--folders", dest="password", default="",
+                            help=self.STR_EMAIL_FOLDERS)
+        
+        parser.add_argument("-x", "--max", dest="maxMessages", default="",
+                            help=self.STR_MAX_MESSAGES)
+        
+        args = parser.parse_args()
+
+        return args
+
+    def setup(self, service, reversed=False):
+
+        loaded = False
+        init = False
+
+        if len(service):
+            self.service = service
+
+        if reversed:
+            self.reversed = True
+    
+        # load the command-line arguments
+        args = self.getArguments()
+
+        # need this since loadSettings needs to know where to 
+        # find the config
+        if args.configFolder:
+            self.configFolder = args.configFolder
+
+        # load the default settings
+        if self.loadSettings():
+
+            if args.debug:
+                self.debug = args.debug
+
+            # then override them with any command line settings
+            if args.sourceFolder:
+                self.sourceFolder = args.sourceFolder
+
+            if args.fileName:
+                self.fileName = os.path.join(args.sourceFolder, args.fileName)
+            
+            if args.outputFolder:
+                self.outputFolder = args.outputFolder
+            
+            if args.mySlug:
+                self.me.slug = args.mySlug
+
+            if args.fromDate:
+                self.fromDate = args.fromDate
+
+            if args.imapServer:
+                self.imapServer = args.imapServer
+
+            if args.emailAccount:
+                self.emailAccount = args.emailAccount
+
+            if args.password:
+                self.password = args.password
+
+            if args.maxMessages:
+                self.maxMessages = int(args.maxMessages)
+
+            if self.loadStrings():
+                if self.loadMIMETypes():
+                    if self.loadPeople():
+                        if self.loadGroups():
+                            loaded = True
+
+        self.peopleFolder = os.path.join(self.outputFolder, self.peopleSubFolder)
+        self.groupsFolder = os.path.join(self.peopleFolder, self.groupsSubFolder)
+
+        if self.debug == True:
+            print(self)
+
+        if loaded and self.me.slug:
+            # email service doesn't require a messages file
+            if self.service == markdown.YAML_SERVICE_EMAIL:
+                if not self.emailAccount:
+                    print('Need an email address. Use "-e <email_address>"')
+                elif not self.password:
+                    print('Need an email password. Use "-p <password>"')
+                elif not self.imapServer:
+                    print('Need an IMAP server. Use "-i <server>"')
+                else:
+                    init = True
+            elif not self.fileName:
+                print('No messages file specified')
+            elif not os.path.exists(self.fileName):
+                print('The messages file could not be found')
+            else:
+                init = True
+        
+        elif not self.me.slug:
+            print('Your slug is not defined. Use \"-m slug\" to specify it.')
+            print('Setup failed.')
+        
+        return init
 
     def setSourceFolder(folderName, self):
         self.sourceFolder = folderName
@@ -242,6 +434,22 @@ class _Config:
             print(e)
         
         return len(self.strings)
+    
+    # given a filename, return the MIME type or None if none found
+    def getMIMEType(self, filename):
+
+        MIMETypes = self.MIMETypes
+
+        # get the suffix
+        parts = filename.split('.')
+        suffix = parts[parts.length - 1]
+    
+        # find the type
+        for mimeType, ext in MIMETypes.items():
+            if ext == suffix:
+                return mimeType
+            
+        return None
         
     def loadMIMETypes(self):
 
@@ -303,8 +511,8 @@ class _Config:
                 slugs.append(thePerson.slug)
         
         # add myself to the slugs if not there already
-        if self.mySlug not in slugs:
-            slugs.append(self.mySlug)
+        if self.me.slug not in slugs:
+            slugs.append(self.me.slug)
 
         if len(slugs):
             for theGroup in self.groups:
@@ -315,7 +523,7 @@ class _Config:
                     break
 
         if not found:
-            print( self.getStr(self.STR_COULD_NOT_FIND_A_GROUP) + str(slugs))
+            print(self.getStr(self.STR_COULD_NOT_FIND_A_GROUP) + str(slugs))
 
         return slug
                     
@@ -351,7 +559,11 @@ class _Config:
         try:
             peopleFileName = os.path.join(self.configFolder, PEOPLE_FILE_NAME)
             peopleFile = open(peopleFileName, 'r', encoding="utf-8")
-            jsonPeople = json.load(peopleFile)
+
+            try:
+                jsonPeople = json.load(peopleFile)
+            except Exception as e:
+                print(e)
 
             for jsonPerson in jsonPeople:
                 try:
@@ -359,7 +571,12 @@ class _Config:
                     thePerson.slug = jsonPerson[self.PERSON_FIELD_SLUG]
                     thePerson.firstName = jsonPerson[self.PERSON_FIELD_FIRST_NAME]
                     thePerson.lastName = jsonPerson[self.PERSON_FIELD_LAST_NAME]
-                    thePerson.mobile = jsonPerson[self.PERSON_FIELD_MOBILE]
+                    
+                    mobile = jsonPerson[self.PERSON_FIELD_MOBILE]
+                    if mobile:
+                        mobile = mobile.replace('+', '').replace('-', '')
+                        thePerson.mobile = mobile
+                    
                     thePerson.linkedInId = jsonPerson[self.PERSON_FIELD_LINKEDIN_ID]
                     try:
                         emailAddresses = jsonPerson[self.PERSON_FIELD_EMAIL]
@@ -370,7 +587,13 @@ class _Config:
                         thePerson.conversationId = jsonPerson[self.PERSON_FIELD_CONVERSATION_ID]
                     except:
                         pass # not everyone will have one of these
+
+                    # add this person to the collection of people
                     self.people.append(thePerson)
+
+                    # see if it's me and save me!
+                    if thePerson.slug == self.me.slug:
+                        self.setMe(thePerson)
 
                 except Exception as e:
                     print("Error loading person.")
@@ -420,16 +643,18 @@ class _Config:
 
         return len(self.groups)
     
-    # get the Person object representing me
-    def getMe(self):
-        
-        thePerson = person.Person()
+    def getPersonByEmail(self, emailAddress):
+
+        result = False
 
         for thePerson in self.people:
-            if thePerson.slug == self.mySlug:
-                break
-        
-        return thePerson
+
+            if len(thePerson.emailAddresses):
+                if emailAddress in thePerson.emailAddresses:
+                    result = thePerson
+                    break
+
+        return result
 
     # -----------------------------------------------------------------------------
     #
@@ -440,6 +665,10 @@ class _Config:
     # their country code and other times not. For example:
     #
     #  '2985551212' and '+12895551212"
+    #
+    # Parameters:
+    # 
+    #   - number - the phone number
     #
     # -----------------------------------------------------------------------------
     def getPersonByNumber(self, number):

@@ -1,4 +1,5 @@
 import os
+import re
 import time
 
 #import pathlib
@@ -28,6 +29,9 @@ YAML_SERVICE_SMS = "sms"
 YAML_SERVICE_LINKEDIN = "linkedin"
 YAML_SERVICE_EMAIL = "email"
 TAG_CHAT = "chat"
+TAG_EMAIL = "email"
+YAML_SUBJECT = "subject"
+YAML_MESSAGE_ID = "message-id"
 
 # -----------------------------------------------------------------------------
 #
@@ -107,7 +111,7 @@ def createMarkdownFile(entity, folder, theConfig):
     for datedMessages in entity.messages:
 
         for theMessage in datedMessages.messages:
-            
+
             if theConfig.fromDate and (theMessage.dateStr < theConfig.fromDate):
                 continue
 
@@ -133,7 +137,7 @@ def createMarkdownFile(entity, folder, theConfig):
             if outputFile:
                 # add the front matter if this is a new file
                 if exists == False and (not theMessage.isNoteToSelf() or theMessage.groupSlug):
-                    frontMatter = getFrontMatter(theMessage, theConfig.mySlug, theConfig)
+                    frontMatter = getFrontMatter(theMessage, theConfig)
                     outputFile.write(frontMatter)
          
                 # don't add to the file if it's previously created
@@ -177,7 +181,6 @@ def openOutputFile(fileName, theConfig):
 # Parameters:
 #
 #    theMessage - the messages to be added
-#    mySlug - short label that represents me, e.g. 'bernie'
 #    theConfig - the configuration, an instance of Config
 #
 # Notes:
@@ -185,20 +188,26 @@ def openOutputFile(fileName, theConfig):
 #    `service` is what was used to send/receive message e.g. YAML_SERVICE_SMS
 #
 # -----------------------------------------------------------------------------
-def getFrontMatter(theMessage, mySlug, theConfig):
+def getFrontMatter(theMessage, theConfig):
 
     frontMatter = YAML_DASHES 
-    frontMatter += YAML_TAGS + ": [" + TAG_CHAT
+    frontMatter += YAML_TAGS + ": ["
+    
+    if theConfig.service == YAML_SERVICE_EMAIL:
+        frontMatter += TAG_EMAIL
+    else:
+        frontMatter += TAG_CHAT
+
     if theMessage.groupSlug:
         frontMatter += ", " + theMessage.groupSlug
     frontMatter += "]" + NEW_LINE
     frontMatter += YAML_PEOPLE + ": ["
     
     if not theMessage.groupSlug:
-        frontMatter += theMessage.sourceSlug
+        frontMatter += theMessage.fromSlug
 
-        if len(theMessage.destinationSlug) and theMessage.isNoteToSelf() == False:
-            frontMatter += ", " + theMessage.destinationSlug
+        if len(theMessage.toSlugs) and theMessage.isNoteToSelf() == False:
+            frontMatter += ", " + ", ".join(theMessage.toSlugs)
     
     elif len(theMessage.groupSlug):
         firstTime = True
@@ -211,8 +220,8 @@ def getFrontMatter(theMessage, mySlug, theConfig):
                     firstTime = False
                 break
 
-    elif len(theMessage.sourceSlug) and theMessage.sourceSlug != mySlug:
-        frontMatter += ", " + theMessage.sourceSlug
+    elif len(theMessage.fromSlug) and theMessage.fromSlug != theConfig.me.slug:
+        frontMatter += ", " + theMessage.fromSlug
 
     if len(theMessage.dateStr)==0: 
         dateStr = "null"
@@ -227,6 +236,12 @@ def getFrontMatter(theMessage, mySlug, theConfig):
     frontMatter += "]" + NEW_LINE
     frontMatter += YAML_DATE + ": " + dateStr + NEW_LINE
     frontMatter += YAML_TIME + ": " + timeStr + NEW_LINE
+    subject = theMessage.subject
+
+    if subject and isinstance(subject, str): 
+        # replace double quotes with single quotes inside double-quoted strings
+        subject = re.sub(r'"([^"]*)"', lambda match: "'" + match.group(1) + "'", subject)
+        frontMatter += YAML_SUBJECT + ": \"" + subject + "\"" + NEW_LINE
     frontMatter += YAML_SERVICE + ": " + theConfig.service + NEW_LINE
     frontMatter += YAML_DASHES + NEW_LINE
 
@@ -247,19 +262,23 @@ def getMarkdown(theMessage, theConfig, people):
 
     text = ""
     firstName = ""
-    sourceSlug = theMessage.sourceSlug
+    fromSlug = theMessage.fromSlug
 
     if theConfig.timeNameSeparate:
         text += NEW_LINE + theMessage.timeStr + NEW_LINE
 
-    if sourceSlug:
-        firstName = theConfig.getFirstNameBySlug(sourceSlug)
+    if fromSlug:
+        firstName = theConfig.getFirstNameBySlug(fromSlug)
+    else: 
+        # assume it's from me
+        if theConfig.me.slug not in theMessage.toSlugs:
+            firstName = theConfig.me.firstName
 
     # I've seen cases with SMS Backup where `from_address="null"` and,
     # in turn, code can't get a source slug, so we skip the message
     if not firstName:
         if (theConfig.debug):
-            print("No first name.")
+            print("No first name, fromSlug='" + fromSlug + "'")
             print(theMessage)
         return text
 
@@ -274,16 +293,16 @@ def getMarkdown(theMessage, theConfig, people):
 
     if theConfig.colonAfterContext: 
         text += ":"
-        
+
     if not theConfig.timeNameSeparate: 
         text += NEW_LINE
-        
+
     for theAttachment in theMessage.attachments:
         link = theAttachment.generateLink(theConfig)
         text += link
 
     text += NEW_LINE
-    
+
     try:
         quotedText = theMessage.quote.text
         lengthOfQuotedText = len(theMessage.quote.text)
@@ -305,14 +324,16 @@ def getMarkdown(theMessage, theConfig, people):
                 text += NEW_LINE + MD_QUOTE + NEW_LINE
     except:
         pass
-    
+
     if len(theMessage.body):
-        text += MD_QUOTE + theMessage.body + NEW_LINE
+        if theConfig.service != YAML_SERVICE_EMAIL:
+            text += MD_QUOTE
+        text += theMessage.body + NEW_LINE
 
     if theConfig.includeReactions and len(theMessage.reactions):
         text += MD_QUOTE + NEW_LINE + MD_QUOTE
         for theReaction in theMessage.reactions:
-            firstName = theConfig.getFirstNameBySlug(theReaction.sourceSlug)
+            firstName = theConfig.getFirstNameBySlug(theReaction.fromSlug)
             text += str(theReaction.emoji) + " *" + firstName.lower() + "*   "
         text += NEW_LINE
 
@@ -359,9 +380,8 @@ def createDailyNotesFolders(theConfig):
 # Parameters:
 #
 #   - entity: a Person or a Group object
-#   - outputFolder: root folder where the subfolder per-person / files created
+#   - peopleFolder: root folder where the subfolder per-person / files created
 #   - theMessage: the current message being processed
-#   - mySlug: slug of the person who runs this tool
 #   - theConfig - all of the Config(uration)
 #
 # -----------------------------------------------------------------------------
@@ -376,8 +396,8 @@ def getMediaFolderName(entity, peopleFolder, theMessage, theConfig):
     elif theMessage.isNoteToSelf() and len(theConfig.dailyNotesSubFolder):
         folder = os.path.join(theConfig.outputFolder, theConfig.dailyNotesSubFolder)
 
-    elif theMessage.hasAttachment() and theMessage.sourceSlug == theConfig.mySlug:
-        folder = os.path.join(peopleFolder, theConfig.mySlug)
+    elif theMessage.hasAttachment() and theMessage.fromSlug == theConfig.me.slug:
+        folder = os.path.join(peopleFolder, theConfig.me.slug)
     
     else:
         folder = os.path.join(peopleFolder, entity.slug)

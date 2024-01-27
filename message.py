@@ -15,7 +15,7 @@ class Reaction:
     def __init__(self):
         self.emoji = ""
         self.targetTimeSent = 0 # which timestamp the emoji relates to
-        self.sourceSlug = "" # person who had the reaction
+        self.fromSlug = "" # person who had the reaction
 
 # An actual message
 # 
@@ -30,8 +30,8 @@ class Message:
         self.timeStr = ""         # hh:mm in 24 hour clock
         self.groupSlug = ""       # the group the message sent to
         self.phoneNumber = ""     # phone number of the sender
-        self.sourceSlug = ""      # `person-slug` of who the message is from
-        self.destinationSlug = "" # `person-slug` who the message was sent to
+        self.fromSlug = ""        # `person-slug` of who the message is from
+        self.toSlugs = []         # `person-slug` who the message was sent to
         self.body = ""            # actual content of the message
         self.targetSentTimestamp = "" # which timestamp the emoji relates to
                                   # @todo this is specific to Signal 
@@ -39,27 +39,29 @@ class Message:
         self.quote = Quote()      # quoted text if replying
         self.attachments = []
         self.reactions = []
+        self.subject = ""
+        self.service = ""         # mesaging service e.g. YAML_SERVICE_SIGNAL
 
     def __str__(self):
-        output = str(self.timeStamp)
-        output += "id: " + self.id + NEW_LINE
+        output = "id: " + self.id + NEW_LINE
         output += "timeStamp: " + str(self.timeStamp) + NEW_LINE
         output += "dateStr: " + self.dateStr + NEW_LINE
         output += "timeStr: " + self.timeStr + NEW_LINE
-        output += "sourceSlug: " + self.sourceSlug + NEW_LINE
-        output += "destinationSlug: " + self.destinationSlug + NEW_LINE
+        output += "fromSlug: " + self.fromSlug + NEW_LINE
+        output += "toSlugs: " + str(self.toSlugs) + NEW_LINE
         output += "groupSlug: " + self.groupSlug + NEW_LINE
         output += "phoneNumber: " + self.phoneNumber + NEW_LINE
         output += "processed: " + str(self.processed) + NEW_LINE
-        output += "attachmemts: " + str(len(self.attachments)) + NEW_LINE
+        output += "attachments: " + str(len(self.attachments)) + NEW_LINE
         output += "reactions: " + str(len(self.reactions)) + NEW_LINE
+        output += "subject: " + self.subject + NEW_LINE
         output += "body: " + self.body
         return output
 
     # checks if this is a message sent to myself i.e. "Note to Self" feature
     def isNoteToSelf(self):
         result = False
-        if self.sourceSlug == self.destinationSlug and not self.groupSlug:
+        if (self.fromSlug in self.toSlugs) and not self.groupSlug:
             result = True
         return result
     
@@ -100,14 +102,12 @@ class DatedMessages:
 # 
 # Parameters:
 #
-#    messages - the messages to be added
-#    theConfig - the configuration, an instance of Config
+#   - messages - the messages to be added
+#   - theConfig - the configuration, an instance of Config
 #
 # -----------------------------------------------------------------------------
 def addMessages(messages, theConfig):
 
-    me = theConfig.getMe()
-    
     for theMessage in messages:
 
         if theMessage and len(theMessage.groupSlug):
@@ -119,11 +119,12 @@ def addMessages(messages, theConfig):
         if theMessage and not theMessage.processed:
             
             if theMessage.isNoteToSelf():
-                addMessage(theMessage, me, theConfig.reversed)
+                addMessage(theMessage, theConfig.me, theConfig.reversed)
                 theMessage.processed = True
             else:
                 for person in theConfig.people:
-                    if person.slug != me.slug and (person.slug == theMessage.destinationSlug or person.slug == theMessage.sourceSlug): 
+                    slug = person.slug
+                    if slug != theConfig.me.slug and (slug in theMessage.toSlugs or slug == theMessage.fromSlug): 
                         addMessage(theMessage, person, theConfig.reversed)
                         theMessage.processed = True
                         break
@@ -149,7 +150,7 @@ def addMessage(theMessage, thing, reversed=False):
 
     try:
 
-        # go through existing dates and add message there
+        # go through existing dates and add the message there
         for messagesOnDate in thing.messages:
             if theMessage.dateStr == messagesOnDate.dateStr:
                 dateFound = True

@@ -24,6 +24,11 @@ Argument | Alternate | Description
 `-m` | `--mySlug` | Which person in the config file is me e.g. `bob`
 `-d` | `--debug` | Print debug messages
 `-b` | `--begin` | The date from which to start converting
+`-i` | `--imap` | IMAP server address
+`-r` | `--folders` | IMAP folders to retrieve from
+`-e` | `--email` | email address to retrieve from
+`-p` | `--password` | email password
+`-x` | `--max` | The maximum number of messages to process
 
  ## License
 

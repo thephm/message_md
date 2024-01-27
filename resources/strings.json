@@ -25,3 +25,9 @@
 {"language":"1","number":"24","text":"could not find a group containing: "}
 {"language":"1","number":"25","text":"convert from date in format YYYY-MM-DD"}
 {"language":"1","number":"26","text":"the configuration folder path"}
+{"language":"1","number":"27","text":"email address"}
+{"language":"1","number":"28","text":"password"}
+{"language":"1","number":"29","text":"IMAP server"}
+{"language":"1","number":"30","text":"email account"}
+{"language":"1","number":"31","text":"maximum number of messages to load"}
+
