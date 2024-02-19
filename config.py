@@ -63,6 +63,7 @@ class _Config:
         self.SETTING_DAILY_NOTES_SUBFOLDER = "daily-notes-subfolder"
         self.SETTING_IMAP_SERVER = "imap-server"
         self.SETTING_EMAIL_FOLDERS = "email-folders"
+        self.SETTING_NOT_EMAIL_FOLDERS = "not-email-folders"
         self.SETTING_EMAIL_ACCOUNT = "email-account"
         self.SETTING_MAX_MESSAGES = "max-messages"
 
@@ -203,6 +204,7 @@ class _Config:
         output += self.SETTING_IMAP_SERVER + ": " + str(self.imapServer) + "\n"
         output += self.SETTING_EMAIL_ACCOUNT + ": " + str(self.emailAccount) + "\n"
         output += self.SETTING_EMAIL_FOLDERS + ": " + str(self.emailFolders) + "\n"
+        output += self.SETTING_NOT_EMAIL_FOLDERS + ": " + str(self.notEmailFolders) + "\n"
         output += self.SETTING_MAX_MESSAGES + ": " + str(self.maxMessages) + "\n"
         
         return output
@@ -215,46 +217,58 @@ class _Config:
             settingsFileName = os.path.join(self.configFolder, self.settingsFileName)
             print("settingsFileName=" + settingsFileName)
 
-            settingsFile = open(settingsFileName, 'r')
-            self.settings = json.load(settingsFile)
-            self.archiveSubFolder = os.path.join(self.sourceFolder, self.settings[self.SETTING_ARCHIVE_SUBFOLDER])
-            
-            messagesFileName = self.settings[self.SETTING_MESSAGES_FILE]
-            if messagesFileName:
-                self.fileName = os.path.join(self.sourceFolder, messagesFileName)
-            
-            # this can be passed on the command line
             try:
-                self.me.slug = self.settings[self.SETTING_MY_SLUG]
-            except:
-                pass
+                settingsFile = open(settingsFileName, 'r')
+            except Exception as e:
+                print(e)
 
-            self.attachmentsSubFolder = self.settings[self.SETTING_ATTACHMENTS_SUBFOLDER]
-            self.outputFolder = self.settings[self.SETTING_OUTPUT_FOLDER]
-            self.groupsSubFolder = self.settings[self.SETTING_GROUPS_SUBFOLDER]
-            self.mediaSubFolder = self.settings[self.SETTING_MEDIA_SUBFOLDER]
-            self.dailyNotesSubFolder = self.settings[self.SETTING_DAILY_NOTES_SUBFOLDER]
-            self.imageEmbed = self.settings[self.SETTING_IMAGE_EMBED]
-            self.imageWidth = self.settings[self.SETTING_IMAGE_WIDTH]
-            self.includeTimestamp = bool(self.settings[self.SETTING_INCLUDE_TIMESTAMP])
-            self.includeQuote = bool(self.settings[self.SETTING_INCLUDE_QUOTE])
-            self.colonAfterContext = bool(self.settings[self.SETTING_COLON_AFTER_CONTEXT])
-            self.timeNameSeparate = bool(self.settings[self.SETTING_TIME_NAME_SEPARATE])
-            self.includeReactions = bool(self.settings[self.SETTING_INCLUDE_REACTIONS])
-            self.folderPerPerson = bool(self.settings[self.SETTING_FOLDER_PER_PERSON])
-            self.filePerPerson = bool(self.settings[self.SETTING_FILE_PER_PERSON])
-            self.filePerDay = bool(self.settings[self.SETTING_FILE_PER_DAY])
-            
-            # these can be passed on the command line
-            try:
-                self.imapServer = self.settings[self.SETTING_IMAP_SERVER]
-                self.maxMessages = self.settings[self.SETTING_MAX_MESSAGES]
-                self.emailAccount = self.settings[self.SETTING_EMAIL_ACCOUNT]
-                self.emailFolders = self.settings[self.SETTING_EMAIL_FOLDERS]
-            except:
-                pass
+            if settingsFile:
 
-            result = True
+                self.settings = json.load(settingsFile)
+                self.archiveSubFolder = os.path.join(self.sourceFolder, self.settings[self.SETTING_ARCHIVE_SUBFOLDER])
+                messagesFileName = self.settings[self.SETTING_MESSAGES_FILE]
+                
+                if messagesFileName:
+                    self.fileName = os.path.join(self.sourceFolder, messagesFileName)
+                    self.attachmentsSubFolder = self.settings[self.SETTING_ATTACHMENTS_SUBFOLDER]
+
+                self.outputFolder = self.settings[self.SETTING_OUTPUT_FOLDER]
+                self.groupsSubFolder = self.settings[self.SETTING_GROUPS_SUBFOLDER]
+                self.mediaSubFolder = self.settings[self.SETTING_MEDIA_SUBFOLDER]
+                self.dailyNotesSubFolder = self.settings[self.SETTING_DAILY_NOTES_SUBFOLDER]
+                self.imageEmbed = self.settings[self.SETTING_IMAGE_EMBED]
+                self.imageWidth = self.settings[self.SETTING_IMAGE_WIDTH]
+                self.includeTimestamp = bool(self.settings[self.SETTING_INCLUDE_TIMESTAMP])
+                self.includeQuote = bool(self.settings[self.SETTING_INCLUDE_QUOTE])
+                self.colonAfterContext = bool(self.settings[self.SETTING_COLON_AFTER_CONTEXT])
+                self.timeNameSeparate = bool(self.settings[self.SETTING_TIME_NAME_SEPARATE])
+                self.includeReactions = bool(self.settings[self.SETTING_INCLUDE_REACTIONS])
+                self.folderPerPerson = bool(self.settings[self.SETTING_FOLDER_PER_PERSON])
+                self.filePerPerson = bool(self.settings[self.SETTING_FILE_PER_PERSON])
+                self.filePerDay = bool(self.settings[self.SETTING_FILE_PER_DAY])
+
+                # this can be passed on the command line
+                try:
+                    self.me.slug = self.settings[self.SETTING_MY_SLUG]
+                except:
+                    pass
+
+                # these can be passed on the command line
+                try:
+                    self.imapServer = self.settings[self.SETTING_IMAP_SERVER]
+                    self.maxMessages = self.settings[self.SETTING_MAX_MESSAGES]
+                    self.emailAccount = self.settings[self.SETTING_EMAIL_ACCOUNT]
+                    self.emailFolders = self.settings[self.SETTING_EMAIL_FOLDERS].split(';')
+                    if self.emailFolders == ['']:
+                        self.emailFolders = []
+                    self.notEmailFolders = self.settings[self.SETTING_NOT_EMAIL_FOLDERS].split(';')
+                    if self.notEmailFolders == ['']:
+                        self.notEmailFolders = []
+                except:
+                    pass
+           
+                result = True
+
             settingsFile.close()
 
         except Exception as e:
@@ -334,54 +348,56 @@ class _Config:
 
         if reversed:
             self.reversed = True
-    
+
         # load the command-line arguments
         args = self.getArguments()
+
+        if not args: 
+            return init
 
         # need this since loadSettings needs to know where to 
         # find the config
         if args.configFolder:
             self.configFolder = args.configFolder
 
-        # load the default settings
-        if self.loadSettings():
+        self.loadSettings()
 
-            if args.debug:
-                self.debug = args.debug
+        if args.debug:
+            self.debug = args.debug
 
-            # then override them with any command line settings
-            if args.sourceFolder:
-                self.sourceFolder = args.sourceFolder
+        # then override them with any command line settings
+        if args.sourceFolder:
+            self.sourceFolder = args.sourceFolder
 
-            if args.fileName:
-                self.fileName = os.path.join(args.sourceFolder, args.fileName)
-            
-            if args.outputFolder:
-                self.outputFolder = args.outputFolder
-            
-            if args.mySlug:
-                self.me.slug = args.mySlug
+        if args.fileName:
+            self.fileName = os.path.join(args.sourceFolder, args.fileName)
+        
+        if args.outputFolder:
+            self.outputFolder = args.outputFolder
+        
+        if args.mySlug:
+            self.me.slug = args.mySlug
 
-            if args.fromDate:
-                self.fromDate = args.fromDate
+        if args.fromDate:
+            self.fromDate = args.fromDate
 
-            if args.imapServer:
-                self.imapServer = args.imapServer
+        if args.imapServer:
+            self.imapServer = args.imapServer
 
-            if args.emailAccount:
-                self.emailAccount = args.emailAccount
+        if args.emailAccount:
+            self.emailAccount = args.emailAccount
 
-            if args.password:
-                self.password = args.password
+        if args.password:
+            self.password = args.password
 
-            if args.maxMessages:
-                self.maxMessages = int(args.maxMessages)
+        if args.maxMessages:
+            self.maxMessages = int(args.maxMessages)
 
-            if self.loadStrings():
-                if self.loadMIMETypes():
-                    if self.loadPeople():
-                        if self.loadGroups():
-                            loaded = True
+        if self.loadStrings():
+            if self.loadMIMETypes():
+                if self.loadPeople():
+                    if self.loadGroups():
+                        loaded = True
 
         self.peopleFolder = os.path.join(self.outputFolder, self.peopleSubFolder)
         self.groupsFolder = os.path.join(self.peopleFolder, self.groupsSubFolder)
@@ -423,13 +439,18 @@ class _Config:
             stringsFileName = os.path.join(RESOURCES_FOLDER, STRINGS_FILE_NAME)
             stringsFile = open(stringsFileName, 'r')
 
-            for line in stringsFile:
-                line = line.rstrip()
-                x = json.loads(line)
-                string = [x[self.LANGUAGE_FIELD], x[self.STRING_NUMBER], x[self.STRING_TEXT]]
-                self.strings.append(string)
-
-            stringsFile.close()
+            if stringsFile:
+                for line in stringsFile:
+                    line = line.rstrip()
+                    try:
+                        x = json.loads(line)
+                        string = [x[self.LANGUAGE_FIELD], x[self.STRING_NUMBER], x[self.STRING_TEXT]]
+                        self.strings.append(string)
+                    except Exception as e:
+                        pass
+                stringsFile.close()
+            else:
+                print("failed to open " + stringsFileName)
         except Exception as e:
             print(e)
         
@@ -560,10 +581,15 @@ class _Config:
             peopleFileName = os.path.join(self.configFolder, PEOPLE_FILE_NAME)
             peopleFile = open(peopleFileName, 'r', encoding="utf-8")
 
+            print(peopleFileName)
+            if not os.path.exists(peopleFileName):
+                return False
+
             try:
                 jsonPeople = json.load(peopleFile)
             except Exception as e:
                 print(e)
+                return False    
 
             for jsonPerson in jsonPeople:
                 try:
@@ -648,7 +674,6 @@ class _Config:
         result = False
 
         for thePerson in self.people:
-
             if len(thePerson.emailAddresses):
                 if emailAddress in thePerson.emailAddresses:
                     result = thePerson
