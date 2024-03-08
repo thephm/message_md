@@ -30,8 +30,8 @@ class Message:
         self.timeStr = ""         # hh:mm in 24 hour clock
         self.groupSlug = ""       # the group the message sent to
         self.phoneNumber = ""     # phone number of the sender
-        self.fromSlug = ""        # `person-slug` of who the message is from
-        self.toSlugs = []         # `person-slug` who the message was sent to
+        self.fromSlug = ""        # Person `slug` of who the message is from
+        self.toSlugs = []         # Person `slug` who the message was sent to
         self.body = ""            # actual content of the message
         self.targetSentTimestamp = "" # which timestamp the emoji relates to
                                   # @todo this is specific to Signal 

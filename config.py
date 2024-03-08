@@ -290,6 +290,7 @@ class _Config:
         me.folderCreated = thePerson.folderCreated
         me.messages = []
 
+    # Parse the command line arguments
     def getArguments(self):
 
         parser = ArgumentParser()
@@ -432,7 +433,7 @@ class _Config:
     def setSourceFolder(folderName, self):
         self.sourceFolder = folderName
         
-    # load strings, returns the number of strings loaded
+    # Load strings used in the script and return the number of strings loaded
     def loadStrings(self):
 
         try:
@@ -456,7 +457,7 @@ class _Config:
         
         return len(self.strings)
     
-    # given a filename, return the MIME type or None if none found
+    # Given a filename, return the MIME type or None if none found
     def getMIMEType(self, filename):
 
         MIMETypes = self.MIMETypes
@@ -472,6 +473,7 @@ class _Config:
             
         return None
         
+    # Load the mapping of file extensions to MIME type, e.g. `jpg` is JPEG
     def loadMIMETypes(self):
 
         self.MIMETypes = False
@@ -520,6 +522,7 @@ class _Config:
     
         return firstName
     
+    # Get the slug for a group of people based on a collection of Phone numbers
     def getGroupSlugByPhoneNumbers(self, phoneNumbers):
         slugs = []
         slug = ""
@@ -574,7 +577,7 @@ class _Config:
 
         return count
 
-    # load the people, returns number of people loaded
+    # Load the people and return the number of people loaded
     def loadPeople(self):
 
         try:
@@ -634,7 +637,7 @@ class _Config:
 
         return len(self.people)
 
-    # load the groups, returns number of groups loaded
+    # Load the groups and return the number of groups loaded
     def loadGroups(self):
 
         try:
@@ -669,6 +672,7 @@ class _Config:
 
         return len(self.groups)
     
+    # Retrieve a Person based on their email address
     def getPersonByEmail(self, emailAddress):
 
         result = False
