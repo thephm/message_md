@@ -141,7 +141,7 @@ class _Config:
         self.strings = []
         self.people = []
         self.groups = []
-        self.MIMETypes = []
+        self.MIME_types = []
 
         self.debug = False
 
@@ -152,43 +152,43 @@ class _Config:
         folder = os.path.dirname(os.path.realpath(__file__))
         self.configFolder = os.path.join(folder, CONFIG_FOLDER)
 
-        self.settingsFileName = "settings.json"
+        self.settings_filename = "settings.json"
         self.service = ""
         self.reversed = False
-        self.fileName = fileName
+        self.filename = fileName
         self.language = self.ENGLISH
-        self.mediaSubFolder = "media"
-        self.imageEmbed = True
-        self.imageWidth = 450
-        self.sourceFolder = "../../messages"
-        self.outputFolder = "../../output"
-        self.attachmentsSubFolder = "attachments"
-        self.archiveSubFolder = "archive"
-        self.peopleSubFolder = "People"
-        self.groupsSubFolder = "groups"
-        self.dailyNotesSubFolder = "Daily Notes"
-        self.includeTimestamp = True
-        self.includeQuote = True
-        self.colonAfterContext = False
-        self.includeReactions = False
-        self.timeNameSeparate = False
-        self.folderPerPerson = True
-        self.filePerPerson = True
-        self.filePerDay = True
-        self.fromDate = datetime.strftime(datetime.now(), '%Y-%m-%d')
-        self.imapServer = ""
-        self.emailAccount = ""
-        self.emailFolders = ""
+        self.media_subfolder = "media"
+        self.image_embed = True
+        self.image_width = 450
+        self.source_folder = "../../messages"
+        self.output_folder = "../../output"
+        self.attachments_subfolder = "attachments"
+        self.archive_subfolder = "archive"
+        self.people_subfolder = "People"
+        self.groups_subfolder = "groups"
+        self.daily_notes_subfolder = "Daily Notes"
+        self.include_timestamp = True
+        self.include_quote = True
+        self.colon_after_context = False
+        self.include_reactions = False
+        self.time_name_separate = False
+        self.folder_per_erson = True
+        self.file_per_person = True
+        self.file_per_day = True
+        self.from_date = datetime.strftime(datetime.now(), '%Y-%m-%d')
+        self.imap_server = ""
+        self.email_account = ""
+        self.email_folders = ""
         self.password = ""
-        self.maxMessages = 10000
+        self.max_messages = 10000
 
     def __str__(self):
         
         output = self.SETTING_MY_SLUG + ": " + str(self.me.slug) + "\n"
-        output += "configFolder: " + str(self.configFolder) + "\n"
+        output += "config_folder: " + str(self.configFolder) + "\n"
         output += self.SETTING_ATTACHMENTS_SUBFOLDER + ": " + str(self.attachmentsSubFolder) + "\n"
         output += self.SETTING_ARCHIVE_SUBFOLDER + ": " + str(self.archiveSubFolder) + "\n"
-        output += self.SETTING_OUTPUT_FOLDER + ": " + str(self.outputFolder) + "\n"
+        output += self.SETTING_OUTPUT_FOLDER + ": " + str(self.output_folder) + "\n"
         output += self.SETTING_MEDIA_SUBFOLDER + ": " + str(self.mediaSubFolder) + "\n"
         output += self.SETTING_IMAGE_EMBED + ": " + str(self.imageEmbed) + "\n"
         output += self.SETTING_IMAGE_WIDTH + ": " + str(self.imageWidth) + "\n"
@@ -201,51 +201,51 @@ class _Config:
         output += self.SETTING_COLON_AFTER_CONTEXT + ": " + str(self.colonAfterContext) + "\n"
         output += self.SETTING_TIME_NAME_SEPARATE + ": " + str(self.timeNameSeparate) + "\n"
         output += self.SETTING_DAILY_NOTES_SUBFOLDER + ": " + str(self.dailyNotesSubFolder) + "\n"
-        output += self.SETTING_IMAP_SERVER + ": " + str(self.imapServer) + "\n"
-        output += self.SETTING_EMAIL_ACCOUNT + ": " + str(self.emailAccount) + "\n"
+        output += self.SETTING_IMAP_SERVER + ": " + str(self.imap_server) + "\n"
+        output += self.SETTING_EMAIL_ACCOUNT + ": " + str(self.email_account) + "\n"
         output += self.SETTING_EMAIL_FOLDERS + ": " + str(self.emailFolders) + "\n"
         output += self.SETTING_NOT_EMAIL_FOLDERS + ": " + str(self.notEmailFolders) + "\n"
-        output += self.SETTING_MAX_MESSAGES + ": " + str(self.maxMessages) + "\n"
+        output += self.SETTING_MAX_MESSAGES + ": " + str(self.max_messages) + "\n"
         
         return output
 
-    def loadSettings(self):
+    def load_settings(self):
 
         result = False
 
         try:
-            settingsFileName = os.path.join(self.configFolder, self.settingsFileName)
-            print("settingsFileName=" + settingsFileName)
+            settings_filename = os.path.join(self.config_folder, self.settings_filename)
+            print("settings_filename=" + settings_filename)
 
             try:
-                settingsFile = open(settingsFileName, 'r')
+                settings_file = open(settings_filename, 'r')
             except Exception as e:
                 print(e)
 
-            if settingsFile:
+            if settings_file:
 
-                self.settings = json.load(settingsFile)
-                self.archiveSubFolder = os.path.join(self.sourceFolder, self.settings[self.SETTING_ARCHIVE_SUBFOLDER])
-                messagesFileName = self.settings[self.SETTING_MESSAGES_FILE]
+                self.settings = json.load(settings_file)
+                self.archive_subfolder = os.path.join(self.source_folder, self.settings[self.SETTING_ARCHIVE_SUBFOLDER])
+                messages_filename = self.settings[self.SETTING_MESSAGES_FILE]
                 
-                if messagesFileName:
-                    self.fileName = os.path.join(self.sourceFolder, messagesFileName)
-                    self.attachmentsSubFolder = self.settings[self.SETTING_ATTACHMENTS_SUBFOLDER]
+                if messages_filename:
+                    self.filename = os.path.join(self.source_folder, messages_filename)
+                    self.attachments_subfolder = self.settings[self.SETTING_ATTACHMENTS_SUBFOLDER]
 
-                self.outputFolder = self.settings[self.SETTING_OUTPUT_FOLDER]
-                self.groupsSubFolder = self.settings[self.SETTING_GROUPS_SUBFOLDER]
-                self.mediaSubFolder = self.settings[self.SETTING_MEDIA_SUBFOLDER]
-                self.dailyNotesSubFolder = self.settings[self.SETTING_DAILY_NOTES_SUBFOLDER]
-                self.imageEmbed = self.settings[self.SETTING_IMAGE_EMBED]
-                self.imageWidth = self.settings[self.SETTING_IMAGE_WIDTH]
-                self.includeTimestamp = bool(self.settings[self.SETTING_INCLUDE_TIMESTAMP])
-                self.includeQuote = bool(self.settings[self.SETTING_INCLUDE_QUOTE])
-                self.colonAfterContext = bool(self.settings[self.SETTING_COLON_AFTER_CONTEXT])
-                self.timeNameSeparate = bool(self.settings[self.SETTING_TIME_NAME_SEPARATE])
-                self.includeReactions = bool(self.settings[self.SETTING_INCLUDE_REACTIONS])
-                self.folderPerPerson = bool(self.settings[self.SETTING_FOLDER_PER_PERSON])
-                self.filePerPerson = bool(self.settings[self.SETTING_FILE_PER_PERSON])
-                self.filePerDay = bool(self.settings[self.SETTING_FILE_PER_DAY])
+                self.output_folder = self.settings[self.SETTING_OUTPUT_FOLDER]
+                self.groups_subfolder = self.settings[self.SETTING_GROUPS_SUBFOLDER]
+                self.media_subfolder = self.settings[self.SETTING_MEDIA_SUBFOLDER]
+                self.daily_notes_subfolder = self.settings[self.SETTING_DAILY_NOTES_SUBFOLDER]
+                self.image_embed = self.settings[self.SETTING_IMAGE_EMBED]
+                self.image_width = self.settings[self.SETTING_IMAGE_WIDTH]
+                self.include_timestamp = bool(self.settings[self.SETTING_INCLUDE_TIMESTAMP])
+                self.include_quote = bool(self.settings[self.SETTING_INCLUDE_QUOTE])
+                self.colon_after_context = bool(self.settings[self.SETTING_COLON_AFTER_CONTEXT])
+                self.time_name_separate = bool(self.settings[self.SETTING_TIME_NAME_SEPARATE])
+                self.include_reactions = bool(self.settings[self.SETTING_INCLUDE_REACTIONS])
+                self.folder_per_person = bool(self.settings[self.SETTING_FOLDER_PER_PERSON])
+                self.file_per_person = bool(self.settings[self.SETTING_FILE_PER_PERSON])
+                self.file_per_day = bool(self.settings[self.SETTING_FILE_PER_DAY])
 
                 # this can be passed on the command line
                 try:
@@ -255,21 +255,21 @@ class _Config:
 
                 # these can be passed on the command line
                 try:
-                    self.imapServer = self.settings[self.SETTING_IMAP_SERVER]
-                    self.maxMessages = self.settings[self.SETTING_MAX_MESSAGES]
-                    self.emailAccount = self.settings[self.SETTING_EMAIL_ACCOUNT]
-                    self.emailFolders = self.settings[self.SETTING_EMAIL_FOLDERS].split(';')
-                    if self.emailFolders == ['']:
-                        self.emailFolders = []
-                    self.notEmailFolders = self.settings[self.SETTING_NOT_EMAIL_FOLDERS].split(';')
-                    if self.notEmailFolders == ['']:
-                        self.notEmailFolders = []
+                    self.imap_server = self.settings[self.SETTING_IMAP_SERVER]
+                    self.max_messages = self.settings[self.SETTING_MAX_MESSAGES]
+                    self.email_account = self.settings[self.SETTING_EMAIL_ACCOUNT]
+                    self.email_folders = self.settings[self.SETTING_EMAIL_FOLDERS].split(';')
+                    if self.email_folders == ['']:
+                        self.email_folders = []
+                    self.not_email_folders = self.settings[self.SETTING_NOT_EMAIL_FOLDERS].split(';')
+                    if self.not_email_folders == ['']:
+                        self.not_email_folders = []
                 except:
                     pass
            
                 result = True
 
-            settingsFile.close()
+            settings_file.close()
 
         except Exception as e:
             print("Error loading settings.")
@@ -278,52 +278,52 @@ class _Config:
 
         return result
     
-    def setMe(self, thePerson):
+    def set_me(self, the_person):
         me = self.me
-        me.slug = thePerson.slug
-        me.firstName = thePerson.firstName
-        me.lastName = thePerson.lastName
-        me.mobile = thePerson.mobile
-        me.linkedInId = thePerson.linkedInId
-        me.emailAddresses = thePerson.emailAddresses
-        me.conversationId = thePerson.conversationId
-        me.folderCreated = thePerson.folderCreated
+        me.slug = the_person.slug
+        me.first_name = the_person.first_name
+        me.last_name = the_person.last_name
+        me.mobile = the_person.mobile
+        me.linkedin_id = the_person.linkedin_id
+        me.email_addresses = the_person.email_addresses
+        me.conversation_id = the_person.conversation_id
+        me.folder_created = the_person.folder_created
         me.messages = []
 
     # Parse the command line arguments
-    def getArguments(self):
+    def get_arguments(self):
 
         parser = ArgumentParser()
 
         parser.add_argument("-c", "--config", dest="configFolder", default=".",
                             help=self.STR_CONFIG_FOLDER)
         
-        parser.add_argument("-s", "--sourcefolder", dest="sourceFolder", default=".",
+        parser.add_argument("-s", "--source_folder", dest="source_folder", default=".",
                             help=self.STR_SOURCE_FOLDER)
         
         parser.add_argument("-f", "--file", dest="fileName",
                             help=self.STR_SOURCE_MESSAGE_FILE, metavar="FILE")
         
-        parser.add_argument("-o", "--outputfolder", dest="outputFolder", default=".",
+        parser.add_argument("-o", "--output_folder", dest="output_folder", default=".",
                             help=self.STR_OUTPUT_FOLDER)
         
         parser.add_argument("-l", "--language", dest="language", default="1",
                             help=self.STR_LANGUAGE_SETTING)
         
-        parser.add_argument("-m", "--myslug", dest="mySlug", default="",
+        parser.add_argument("-m", "--my_slug", dest="my_slug", default="",
                             help=self.STR_MY_SLUG_SETTING)
         
         parser.add_argument("-d", "--debug",
                             action="store_true", dest="debug", default=False,
                             help=self.STR_DONT_PRINT_DEBUG_MSGS)
         
-        parser.add_argument("-b", "--begin", dest="fromDate", default="",
+        parser.add_argument("-b", "--begin", dest="from_date", default="",
                             help=self.STR_FROM_DATE)
         
-        parser.add_argument("-i", "--imap", dest="imapServer", default="",
+        parser.add_argument("-i", "--imap", dest="imap_server", default="",
                             help=self.STR_IMAP_SERVER)
         
-        parser.add_argument("-e", "--email", dest="emailAccount", default="",
+        parser.add_argument("-e", "--email", dest="email_account", default="",
                             help=self.STR_EMAIL_ACCOUNT)
 
         parser.add_argument("-p", "--password", dest="password", default="",
@@ -332,7 +332,7 @@ class _Config:
         parser.add_argument("-r", "--folders", dest="password", default="",
                             help=self.STR_EMAIL_FOLDERS)
         
-        parser.add_argument("-x", "--max", dest="maxMessages", default="",
+        parser.add_argument("-x", "--max", dest="max_messages", default="",
                             help=self.STR_MAX_MESSAGES)
         
         args = parser.parse_args()
@@ -351,56 +351,56 @@ class _Config:
             self.reversed = True
 
         # load the command-line arguments
-        args = self.getArguments()
+        args = self.get_arguments()
 
         if not args: 
             return init
 
         # need this since loadSettings needs to know where to 
         # find the config
-        if args.configFolder:
-            self.configFolder = args.configFolder
+        if args.config_folder:
+            self.config_folder = args.config_folder
 
-        self.loadSettings()
+        self.load_settings()
 
         if args.debug:
             self.debug = args.debug
 
         # then override them with any command line settings
-        if args.sourceFolder:
-            self.sourceFolder = args.sourceFolder
+        if args.source_folder:
+            self.source_folder = args.source_folder
 
         if args.fileName:
-            self.fileName = os.path.join(args.sourceFolder, args.fileName)
+            self.fileName = os.path.join(args.source_folder, args.fileName)
         
-        if args.outputFolder:
-            self.outputFolder = args.outputFolder
+        if args.output_folder:
+            self.output_folder = args.output_folder
         
-        if args.mySlug:
-            self.me.slug = args.mySlug
+        if args.my_slug:
+            self.me.slug = args.my_slug
 
-        if args.fromDate:
-            self.fromDate = args.fromDate
+        if args.from_date:
+            self.from_date = args.from_date
 
-        if args.imapServer:
-            self.imapServer = args.imapServer
+        if args.imap_server:
+            self.imap_server = args.imap_server
 
-        if args.emailAccount:
-            self.emailAccount = args.emailAccount
+        if args.email_account:
+            self.email_account = args.email_account
 
         if args.password:
             self.password = args.password
 
-        if args.maxMessages:
-            self.maxMessages = int(args.maxMessages)
+        if args.max_messages:
+            self.max_messages = int(args.max_messages)
 
-        if self.loadStrings():
-            if self.loadMIMETypes():
-                if self.loadPeople():
-                    if self.loadGroups():
+        if self.load_strings():
+            if self.load_MIME_types():
+                if self.load_people():
+                    if self.load_groups():
                         loaded = True
 
-        self.peopleFolder = os.path.join(self.outputFolder, self.peopleSubFolder)
+        self.peopleFolder = os.path.join(self.output_folder, self.peopleSubFolder)
         self.groupsFolder = os.path.join(self.peopleFolder, self.groupsSubFolder)
 
         if self.debug == True:
@@ -409,11 +409,11 @@ class _Config:
         if loaded and self.me.slug:
             # email service doesn't require a messages file
             if self.service == markdown.YAML_SERVICE_EMAIL:
-                if not self.emailAccount:
+                if not self.email_account:
                     print('Need an email address. Use "-e <email_address>"')
                 elif not self.password:
                     print('Need an email password. Use "-p <password>"')
-                elif not self.imapServer:
+                elif not self.imap_server:
                     print('Need an IMAP server. Use "-i <server>"')
                 else:
                     init = True
@@ -430,8 +430,8 @@ class _Config:
         
         return init
 
-    def setSourceFolder(folderName, self):
-        self.sourceFolder = folderName
+    def setsource_folder(folderName, self):
+        self.source_folder = folderName
         
     # Load strings used in the script and return the number of strings loaded
     def loadStrings(self):
@@ -458,171 +458,171 @@ class _Config:
         return len(self.strings)
     
     # Given a filename, return the MIME type or None if none found
-    def getMIMEType(self, filename):
+    def get_MIME_Type(self, filename):
 
-        MIMETypes = self.MIMETypes
+        MIME_types = self.MIME_types
 
         # get the suffix
         parts = filename.split('.')
         suffix = parts[parts.length - 1]
     
         # find the type
-        for mimeType, ext in MIMETypes.items():
+        for MIME_type, ext in MIME_types.items():
             if ext == suffix:
-                return mimeType
+                return MIME_type
             
         return None
         
     # Load the mapping of file extensions to MIME type, e.g. `jpg` is JPEG
-    def loadMIMETypes(self):
+    def load_MIME_types(self):
 
-        self.MIMETypes = False
+        self.MIME_types = False
 
         try:
-            MIMETypesFileName = os.path.join(RESOURCES_FOLDER, MIME_TYPES_FILE_NAME)
-            MIMETypesFile = open(MIMETypesFileName, 'r')
-            self.MIMETypes = json.load(MIMETypesFile)
+            MIME_types_filename = os.path.join(RESOURCES_FOLDER, MIME_TYPES_FILE_NAME)
+            MIME_types_file = open(MIME_types_filename, 'r')
+            self.MIME_types = json.load(MIME_types_file)
         except:
-            print(self.getStr(self.STR_COULD_NOT_LOAD_MIME_TYPES))
+            print(self.get_str(self.STR_COULD_NOT_LOAD_MIME_TYPES))
 
-        return self.MIMETypes
+        return self.MIME_types
     
     # Lookup a person's first name from their mobile number
-    def getFirstNameByNumber(self, number):
+    def get_first_name_by_number(self, number):
         
         global Strings
 
-        firstName = ""
-        thePerson = self.getPersonByNumber(number, self.people)
+        first_name = ""
+        the_person = self.get_person_by_number(number, self.people)
         
-        if thePerson:
+        if the_person:
             try: 
-                firstName = thePerson.firstName
+                first_name = the_person.first_name
             except Exception as e:   
-                print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + number)
+                print(self.get_str(self.STR_PERSON_NOT_FOUND) + ": " + number)
                 print(e)
                 pass
 
-        if not firstName:
-            print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + number)
+        if not first_name:
+            print(self.get_str(self.STR_PERSON_NOT_FOUND) + ": " + number)
 
-        return firstName
+        return first_name
 
     # Lookup a person's first-name from their slug
-    def getFirstNameBySlug(self, slug):
+    def get_first_name_by_slug(self, slug):
 
-        firstName = ""
+        first_name = ""
 
-        for thePerson in self.people:
-            if thePerson.slug == slug:
-                firstName = thePerson.firstName
+        for the_person in self.people:
+            if the_person.slug == slug:
+                first_name = the_person.first_name
 
-        if not firstName:
-            print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + slug)
+        if not first_name:
+            print(self.get_str(self.STR_PERSON_NOT_FOUND) + ": " + slug)
     
-        return firstName
+        return first_name
     
     # Get the slug for a group of people based on a collection of Phone numbers
-    def getGroupSlugByPhoneNumbers(self, phoneNumbers):
+    def get_group_slug_by_phone_numbers(self, phone_numbers):
         slugs = []
         slug = ""
         found = False
 
         # first get the slugs for the phone numbers
-        for phoneNumber in phoneNumbers:
-            thePerson = self.getPersonByNumber(phoneNumber)
-            if thePerson:
-                slugs.append(thePerson.slug)
+        for phone_number in phone_numbers:
+            the_person = self.get_person_by_number(phone_number)
+            if the_person:
+                slugs.append(the_person.slug)
         
         # add myself to the slugs if not there already
         if self.me.slug not in slugs:
             slugs.append(self.me.slug)
 
         if len(slugs):
-            for theGroup in self.groups:
+            for the_group in self.groups:
                 # use set() in case they're not in the same order
-                if set(theGroup.members) == set(slugs):
-                    slug = theGroup.slug
+                if set(the_group.members) == set(slugs):
+                    slug = the_group.slug
                     found = True
                     break
 
         if not found:
-            print(self.getStr(self.STR_COULD_NOT_FIND_A_GROUP) + str(slugs))
+            print(self.get_str(self.STR_COULD_NOT_FIND_A_GROUP) + str(slugs))
 
         return slug
                     
     # Lookup the group slug based on it's unique ID
-    def getGroupSlug(self, id):
+    def get_group_slug(self, id):
         slug = ""
 
-        for theGroup in self.groups:
-            if theGroup.id == id:
-                slug = theGroup.slug
+        for the_group in self.groups:
+            if the_group.id == id:
+                slug = the_group.slug
         
         return slug
 
     # Lookup the group slug based on a conversation ID
-    def getGroupSlugByConversationId(self, id):
+    def get_group_slug_by_conversation_id(self, id):
         slug = ""
 
-        for theGroup in self.groups:
-            if theGroup.conversationId == id:
-                slug = theGroup.slug
+        for the_group in self.groups:
+            if the_group.conversation_id == id:
+                slug = the_group.slug
         
         return slug
     
     # Parse the email address(es) for the person
-    def parseEmail(thePerson, data):
+    def parse_email(the_person, data):
         count = 0
 
         return count
 
     # Load the people and return the number of people loaded
-    def loadPeople(self):
+    def load_people(self):
 
         try:
-            peopleFileName = os.path.join(self.configFolder, PEOPLE_FILE_NAME)
-            peopleFile = open(peopleFileName, 'r', encoding="utf-8")
+            people_filename = os.path.join(self.config_folder, PEOPLE_FILE_NAME)
+            people_file = open(people_filename, 'r', encoding="utf-8")
 
-            print(peopleFileName)
-            if not os.path.exists(peopleFileName):
+            print(people_filename)
+            if not os.path.exists(people_filename):
                 return False
 
             try:
-                jsonPeople = json.load(peopleFile)
+                json_people = json.load(people_file)
             except Exception as e:
                 print(e)
                 return False    
 
-            for jsonPerson in jsonPeople:
+            for json_person in json_people:
                 try:
-                    thePerson = person.Person()
-                    thePerson.slug = jsonPerson[self.PERSON_FIELD_SLUG]
-                    thePerson.firstName = jsonPerson[self.PERSON_FIELD_FIRST_NAME]
-                    thePerson.lastName = jsonPerson[self.PERSON_FIELD_LAST_NAME]
+                    the_person = person.Person()
+                    the_person.slug = json_person[self.PERSON_FIELD_SLUG]
+                    the_person.first_name = json_person[self.PERSON_FIELD_FIRST_NAME]
+                    the_person.last_name = json_person[self.PERSON_FIELD_LAST_NAME]
                     
-                    mobile = jsonPerson[self.PERSON_FIELD_MOBILE]
+                    mobile = json_person[self.PERSON_FIELD_MOBILE]
                     if mobile:
                         mobile = mobile.replace('+', '').replace('-', '')
-                        thePerson.mobile = mobile
+                        the_person.mobile = mobile
                     
-                    thePerson.linkedInId = jsonPerson[self.PERSON_FIELD_LINKEDIN_ID]
+                    the_person.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
                     try:
-                        emailAddresses = jsonPerson[self.PERSON_FIELD_EMAIL]
-                        thePerson.emailAddresses = emailAddresses.split(";")
+                        email_addresses = json_person[self.PERSON_FIELD_EMAIL]
+                        the_person.email_addresses = email_addresses.split(";")
                     except:
                         pass #not everyone needs one of these
                     try:
-                        thePerson.conversationId = jsonPerson[self.PERSON_FIELD_CONVERSATION_ID]
+                        the_person.conversation_id = json_person[self.PERSON_FIELD_CONVERSATION_ID]
                     except:
                         pass # not everyone will have one of these
 
                     # add this person to the collection of people
-                    self.people.append(thePerson)
+                    self.people.append(the_person)
 
                     # see if it's me and save me!
-                    if thePerson.slug == self.me.slug:
-                        self.setMe(thePerson)
+                    if the_person.slug == self.me.slug:
+                        self.set_me(the_person)
 
                 except Exception as e:
                     print("Error loading person.")
@@ -633,39 +633,39 @@ class _Config:
             print(e)
             return
 
-        peopleFile.close()
+        people_file.close()
 
         return len(self.people)
 
     # Load the groups and return the number of groups loaded
-    def loadGroups(self):
+    def load_groups(self):
 
         try:
-            groupsFileName = os.path.join(self.configFolder, GROUPS_FILE_NAME)
-            groupsFile = open(groupsFileName, 'r', encoding="utf-8")
-            jsonGroups = json.load(groupsFile)
+            groups_filename = os.path.join(self.config_folder, GROUPS_FILE_NAME)
+            groups_file = open(groups_filename, 'r', encoding="utf-8")
+            json_groups = json.load(groups_file)
 
-            for jsonGroup in jsonGroups[self.GROUP_COLLECTION]:
-                theGroup = group.Group()
+            for json_group in json_groups[self.GROUP_COLLECTION]:
+                the_group = group.Group()
                 try:
-                    theGroup.id = jsonGroup[self.GROUP_FIELD_ID]
-                    theGroup.slug = jsonGroup[self.GROUP_FIELD_SLUG]
-                    theGroup.description = jsonGroup[self.GROUP_FIELD_DESCRIPTION]
+                    the_group.id = json_group[self.GROUP_FIELD_ID]
+                    the_group.slug = json_group[self.GROUP_FIELD_SLUG]
+                    the_group.description = json_group[self.GROUP_FIELD_DESCRIPTION]
                     try:
-                        theGroup.conversationId = jsonGroup[self.GROUP_FIELD_CONVERSATION_ID]
+                        the_group.conversation_id = json_group[self.GROUP_FIELD_CONVERSATION_ID]
                     except:
                         pass
                     try:
-                        for personSlug in jsonGroup[self.GROUP_FIELD_PEOPLE]:
-                            theGroup.members.append(personSlug)
-                        self.groups.append(theGroup)
+                        for person_slug in json_group[self.GROUP_FIELD_PEOPLE]:
+                            the_group.members.append(person_slug)
+                        self.groups.append(the_group)
                     except:
                         pass
 
                 except:
                     pass
 
-            groupsFile.close()
+            groups_file.close()
         
         except Exception as e:
             print(e)
@@ -673,14 +673,14 @@ class _Config:
         return len(self.groups)
     
     # Retrieve a Person based on their email address
-    def getPersonByEmail(self, emailAddress):
+    def get_person_by_email(self, email_address):
 
         result = False
 
-        for thePerson in self.people:
-            if len(thePerson.emailAddresses):
-                if emailAddress in thePerson.emailAddresses:
-                    result = thePerson
+        for the_person in self.people:
+            if len(the_person.email_addresses):
+                if email_address in the_person.email_addresses:
+                    result = the_person
                     break
 
         return result
@@ -700,13 +700,13 @@ class _Config:
     #   - number - the phone number
     #
     # -----------------------------------------------------------------------------
-    def getPersonByNumber(self, number):
+    def get_person_by_number(self, number):
 
-        for thePerson in self.people:
-            if len(thePerson.mobile):
+        for the_person in self.people:
+            if len(the_person.mobile):
                 try:
-                    if thePerson.mobile[-10:] == number[-10:]:
-                        return thePerson
+                    if the_person.mobile[-10:] == number[-10:]:
+                        return the_person
                 except:
                     return False
             
@@ -715,21 +715,21 @@ class _Config:
     # Lookup a person in people array from their LinkedIn ID.
     # 
     # -----------------------------------------------------------------------------
-    def getPersonByLinkedInId(self, id):
+    def get_person_by_linkedin_id(self, id):
 
         if not len(id):
             return False
 
-        for thePerson in self.people:
+        for the_person in self.people:
             try:
-                if thePerson.linkedInId == id:
-                    return thePerson
+                if the_person.linkedin_id == id:
+                    return the_person
             except Exception as e:
                 print("Error looking up person by LinkedIn ID.")
                 print(e)
                 return False
             
-        print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + id)
+        print(self.get_str(self.STR_PERSON_NOT_FOUND) + ": " + id)
   
     # -----------------------------------------------------------------------------
     #
@@ -740,33 +740,35 @@ class _Config:
     #   - id - conversation ID for the person
     #
     # Returns:
+    #
     #   - False if no person found
     #   - Person object if found 
+    #
     # -----------------------------------------------------------------------------
-    def getPersonByConversationId(self, id):
+    def get_person_by_conversation_id(self, id):
 
         if len(id):
 
-            for thePerson in self.people:
+            for the_person in self.people:
                 try:
-                    if thePerson.conversationId == id:
-                        return thePerson
+                    if the_person.conversation_id == id:
+                        return the_person
                 except Exception as e:
                     print(e)
                     pass
 
-        print(self.getStr(self.STR_PERSON_NOT_FOUND) + ": " + id)
+        print(self.get_str(self.STR_PERSON_NOT_FOUND) + ": " + id)
 
         return False
 
     # get a string out of strings based on its ID
-    def getStr(self, stringNumber):
+    def get_str(self, string_number):
 
         result = ""
 
         for string in self.strings:
             try:
-                if (int(string[self.STRINGS_NUMBER_INDEX]) == int(stringNumber) and
+                if (int(string[self.STRINGS_NUMBER_INDEX]) == int(string_number) and
                     int(string[self.STRINGS_LANGUAGE_INDEX]) == self.language):
                     result = string[self.STRINGS_TEXT_INDEX]
             except:

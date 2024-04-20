@@ -5,35 +5,35 @@ NEW_LINE = "\n"
 # The message being replied to, if this is a reply vs. a new message
 class Quote:
     def __init__(self):
-        self.id = ""         # timeStamp of the message being replied
-        self.authorSlug = "" # person-slug being quoted
-        self.authorName = "" # name of the person being quoted
+        self.id = ""         # timestamp of the message being replied
+        self.author_slug = "" # person-slug being quoted
+        self.author_name = "" # name of the person being quoted
         self.text = ""       # text being quoted
 
 # Typically an emoji reaction to someone's message
 class Reaction:
     def __init__(self):
         self.emoji = ""
-        self.targetTimeSent = 0 # which timestamp the emoji relates to
-        self.fromSlug = "" # person who had the reaction
+        self.target_time_sent = 0 # which timestamp the emoji relates to
+        self.from_slug = "" # person who had the reaction
 
 # An actual message
 # 
-# - If groupSlug is non-blank, then personSlug will be blank
-# - If personSlug is non-blank, then groupSlug will be blank
+# - If group_slug is non-blank, then personSlug will be blank
+# - If personSlug is non-blank, then group_slug will be blank
 class Message:
     def __init__(self):
         self.id = ""              # ID from the messaging system
         self.time = 0             # time.struct_time object
-        self.timeStamp = 0        # original timestamp in the message
-        self.dateStr = ""         # YYYY-MM-DD
-        self.timeStr = ""         # hh:mm in 24 hour clock
-        self.groupSlug = ""       # the group the message sent to
-        self.phoneNumber = ""     # phone number of the sender
-        self.fromSlug = ""        # Person `slug` of who the message is from
-        self.toSlugs = []         # Person `slug` who the message was sent to
+        self.timestamp = 0        # original timestamp in the message
+        self.date_str = ""         # YYYY-MM-DD
+        self.time_str = ""         # hh:mm in 24 hour clock
+        self.group_slug = ""       # the group the message sent to
+        self.phone_number = ""     # phone number of the sender
+        self.from_slug = ""        # Person `slug` of who the message is from
+        self.to_slugs = []         # Person `slug` who the message was sent to
         self.body = ""            # actual content of the message
-        self.targetSentTimestamp = "" # which timestamp the emoji relates to
+        self.target_sent_timestamp = "" # which timestamp the emoji relates to
                                   # @todo this is specific to Signal 
         self.processed = False    # True if the message been dealt with
         self.quote = Quote()      # quoted text if replying
@@ -44,13 +44,13 @@ class Message:
 
     def __str__(self):
         output = "id: " + self.id + NEW_LINE
-        output += "timeStamp: " + str(self.timeStamp) + NEW_LINE
-        output += "dateStr: " + self.dateStr + NEW_LINE
-        output += "timeStr: " + self.timeStr + NEW_LINE
-        output += "fromSlug: " + self.fromSlug + NEW_LINE
-        output += "toSlugs: " + str(self.toSlugs) + NEW_LINE
-        output += "groupSlug: " + self.groupSlug + NEW_LINE
-        output += "phoneNumber: " + self.phoneNumber + NEW_LINE
+        output += "timestamp: " + str(self.timestamp) + NEW_LINE
+        output += "date_str: " + self.date_str + NEW_LINE
+        output += "time_str: " + self.time_str + NEW_LINE
+        output += "from_slug: " + self.from_slug + NEW_LINE
+        output += "to_slugs: " + str(self.to_slugs) + NEW_LINE
+        output += "group_slug: " + self.group_slug + NEW_LINE
+        output += "phone_number: " + self.phone_number + NEW_LINE
         output += "processed: " + str(self.processed) + NEW_LINE
         output += "attachments: " + str(len(self.attachments)) + NEW_LINE
         output += "reactions: " + str(len(self.reactions)) + NEW_LINE
@@ -59,41 +59,41 @@ class Message:
         return output
 
     # checks if this is a message sent to myself i.e. "Note to Self" feature
-    def isNoteToSelf(self):
+    def is_note_to_self(self):
         result = False
-        if (self.fromSlug in self.toSlugs) and not self.groupSlug:
+        if (self.from_slug in self.to_slugs) and not self.group_slug:
             result = True
         return result
     
-    # depends on the self.timeStamp attribute being set to valid int
-    def setDateTime(self):
+    # depends on the self.timestamp attribute being set to valid int
+    def set_date_time(self):
         try:
             # convert the time seconds since epoch to a time.struct_time object
-            self.time = time.localtime(self.timeStamp)
-            self.dateStr = time.strftime("%Y-%m-%d", self.time)
-            self.timeStr = time.strftime("%H:%M", self.time)
+            self.time = time.localtime(self.timestamp)
+            self.date_str = time.strftime("%Y-%m-%d", self.time)
+            self.time_str = time.strftime("%H:%M", self.time)
             result = True
         except:
             result = False
             
         return result
     
-    def getDateStr(self):
-        return time.strftime("%Y-%m-%d", self.dateStr)
+    def get_date_str(self):
+        return time.strftime("%Y-%m-%d", self.date_str)
         
-    def getTimeStr(self):
-        return time.strftime("%H:%M", self.timeStr)
+    def get_time_str(self):
+        return time.strftime("%H:%M", self.time_str)
 
-    def hasAttachment(self):
+    def has_attachment(self):
         if len(self.attachments): return True
         else: return False
 
-    def addAttachment(self, theAttachment):
-        self.attachments.append(theAttachment)
+    def add_attachment(self, the_attachment):
+        self.attachments.append(the_attachment)
 
 class DatedMessages:
     def __init__(self):
-        self.dateStr = ""
+        self.date_str = ""
         self.messages = []
 
 # -----------------------------------------------------------------------------
@@ -103,30 +103,30 @@ class DatedMessages:
 # Parameters:
 #
 #   - messages - the messages to be added
-#   - theConfig - the configuration, an instance of Config
+#   - the_config - the configuration, an instance of Config
 #
 # -----------------------------------------------------------------------------
-def addMessages(messages, theConfig):
+def add_messages(messages, the_config):
 
-    for theMessage in messages:
+    for the_message in messages:
 
-        if theMessage and len(theMessage.groupSlug):
-            for group in theConfig.groups:
-                if theMessage.groupSlug == group.slug:
-                    addMessage(theMessage, group, theConfig.reversed)
-                    theMessage.processed = True
+        if the_message and len(the_message.group_slug):
+            for group in the_config.groups:
+                if the_message.group_slug == group.slug:
+                    add_message(the_message, group, the_config.reversed)
+                    the_message.processed = True
 
-        if theMessage and not theMessage.processed:
+        if the_message and not the_message.processed:
             
-            if theMessage.isNoteToSelf():
-                addMessage(theMessage, theConfig.me, theConfig.reversed)
-                theMessage.processed = True
+            if the_message.is_note_to_self():
+                add_message(the_message, the_config.me, the_config.reversed)
+                the_message.processed = True
             else:
-                for person in theConfig.people:
+                for person in the_config.people:
                     slug = person.slug
-                    if slug != theConfig.me.slug and (slug in theMessage.toSlugs or slug == theMessage.fromSlug): 
-                        addMessage(theMessage, person, theConfig.reversed)
-                        theMessage.processed = True
+                    if slug != the_config.me.slug and (slug in the_message.to_slugs or slug == the_message.from_slug): 
+                        add_message(the_message, person, the_config.reversed)
+                        the_message.processed = True
                         break
     return
 
@@ -144,30 +144,30 @@ def addMessages(messages, theConfig):
 #    reversed - `True` if messages ordered from newest to oldest
 #
 # -----------------------------------------------------------------------------
-def addMessage(theMessage, thing, reversed=False):
+def add_message(the_message, thing, reversed=False):
 
-    dateFound = False
+    date_found = False
 
     try:
 
         # go through existing dates and add the message there
-        for messagesOnDate in thing.messages:
-            if theMessage.dateStr == messagesOnDate.dateStr:
-                dateFound = True
+        for messages_on_date in thing.messages:
+            if the_message.date_str == messages_on_date.date_str:
+                date_found = True
                 if reversed:
-                    messagesOnDate.messages.insert(0, theMessage)
+                    messages_on_date.messages.insert(0, the_message)
                 else:
-                    messagesOnDate.messages.append(theMessage)
+                    messages_on_date.messages.append(the_message)
 
         # if the date was not found, create it
-        if dateFound == False:
-            newDate = DatedMessages()
-            newDate.dateStr = theMessage.dateStr
+        if date_found == False:
+            new_date = DatedMessages()
+            new_date.date_str = the_message.date_str
             if reversed:
-                newDate.messages.insert(0, theMessage)
+                new_date.messages.insert(0, the_message)
             else:
-                newDate.messages.append(theMessage)
-            thing.messages.append(newDate)
+                new_date.messages.append(the_message)
+            thing.messages.append(new_date)
 
     except Exception as e:
         print(e)
@@ -180,14 +180,14 @@ def addMessage(theMessage, thing, reversed=False):
 # Returns: number of reactions matched
 #
 # -----------------------------------------------------------------------------
-def addReactions(messages, reactions):
+def add_reactions(messages, reactions):
     
     count = 0
 
-    for theMessage in messages:
-        for theReaction in reactions:
-            if theMessage.timeStamp == theReaction.targetTimeSent:
-                theMessage.reactions.append(theReaction)
+    for the_message in messages:
+        for the_reaction in reactions:
+            if the_message.timestamp == the_reaction.target_time_sent:
+                the_message.reactions.append(the_reaction)
                 count +=1
 
     return count

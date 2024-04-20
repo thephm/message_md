@@ -3,7 +3,7 @@ class Group:
         self.id = ""
         self.slug = ""
         self.description = ""
-        self.conversationId = ""
+        self.conversation_id = ""
         self.members = []  # collection of `Person.slug`s
         self.messages = [] # collection of messages by day
 
@@ -13,5 +13,5 @@ class Group:
         output += "description: " + self.description + NEW_LINE
         output += "members: " + self.members + NEW_LINE
         output += "messages: " + str(self.messages.size) + NEW_LINE
-        output += "conversationId: " + self.conversationId
+        output += "conversation_id: " + self.conversation_id
         return output

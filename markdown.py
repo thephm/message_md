@@ -40,7 +40,7 @@ YAML_MESSAGE_ID = "message-id"
 # Parameters:
 #
 #    - thing - a Person or a Group
-#    - theConfig - all of the Config(uration)
+#    - the_config - all of the Config(uration)
 #
 # Returns:
 #
@@ -52,27 +52,27 @@ YAML_MESSAGE_ID = "message-id"
 #    - the `media` sub-folder will be created separately
 #
 # -----------------------------------------------------------------------------
-def createThingFolder(thing, theConfig):
+def create_thing_folder(thing, the_config):
         
     created = False
     folder = ""
 
     if isinstance(thing, person.Person):
-        folder = os.path.join(theConfig.outputFolder, theConfig.peopleSubFolder)
+        folder = os.path.join(the_config.output_folder, the_config.people_subfolder)
     elif isinstance(thing, group.Group):
-        folder = theConfig.groupsFolder
+        folder = the_config.groups_folder
 
     if len(folder) and len(thing.slug):
-        thingFolder = os.path.join(folder, thing.slug)
+        thing_folder = os.path.join(folder, thing.slug)
         try:
-            created = createFolder(thingFolder)
+            created = create_folder(thing_folder)
         except Exception as e:
             print(e)
 
     return created
 
 # create a folder
-def createFolder(folder):
+def create_folder(folder):
     
     result = False
 
@@ -95,7 +95,7 @@ def createFolder(folder):
 # Doesn't create/append to existing file as it's not smart enough to look 
 # inside the file to see what is already there.
 #
-# Only create files for messages after `config.fromDate` if there's a date set
+# Only create files for messages after `config.from_date` if there's a date set
 #
 # Parameters:
 #
@@ -104,48 +104,48 @@ def createFolder(folder):
 #   - config - config settings
 # 
 # -----------------------------------------------------------------------------
-def createMarkdownFile(entity, folder, theConfig):
+def create_markdown_file(entity, folder, the_config):
 
     exists = False
     
-    for datedMessages in entity.messages:
+    for dated_messages in entity.messages:
 
-        for theMessage in datedMessages.messages:
+        for the_message in dated_messages.messages:
 
-            if theConfig.fromDate and (theMessage.dateStr < theConfig.fromDate):
+            if the_config.from_date and (the_message.date_str < the_config.from_date):
                 continue
 
             # convert to Markdown and if no message, move on to the next one
-            theMarkdown = getMarkdown(theMessage, theConfig, entity)
-            if not len(theMarkdown):
+            the_markdown = get_markdown(the_message, the_config, entity)
+            if not len(the_markdown):
                 continue
 
             # where the output files will go
-            fileName = theMessage.dateStr + OUTPUT_FILE_EXTENSION
+            filename = the_message.date_str + OUTPUT_FILE_EXTENSION
 
-            if theMessage.isNoteToSelf():
-                dailyNotesFolder = createDailyNotesFolders(theConfig)
-                fileName = os.path.join(dailyNotesFolder, fileName)
+            if the_message.is_note_to_self():
+                daily_notes_folder = create_daily_notes_folders(the_config)
+                filename = os.path.join(daily_notes_folder, filename)
             else: 
-                createThingFolder(entity, theConfig)
-                fileName = os.path.join(folder, fileName)
+                create_thing_folder(entity, the_config)
+                filename = os.path.join(folder, filename)
             
-            exists = os.path.exists(fileName)
+            exists = os.path.exists(filename)
 
-            outputFile = openOutputFile(fileName, theConfig)
+            outputFile = open_output_file(filename, the_config)
             
             if outputFile:
                 # add the front matter if this is a new file
-                if exists == False and (not theMessage.isNoteToSelf() or theMessage.groupSlug):
-                    frontMatter = getFrontMatter(theMessage, theConfig)
-                    outputFile.write(frontMatter)
+                if exists == False and (not the_message.is_note_to_self() or the_message.group_slug):
+                    frontmatter = get_frontmatter(the_message, the_config)
+                    outputFile.write(frontmatter)
          
                 # don't add to the file if it's previously created
                 # UNLESS it's a note-to-self
-                age = time.time() - os.path.getctime(fileName)
-                if age < WELL_AGED or theMessage.isNoteToSelf():
+                age = time.time() - os.path.getctime(filename)
+                if age < WELL_AGED or the_message.is_note_to_self():
                     try:
-                        outputFile.write(getMarkdown(theMessage, theConfig, entity))
+                        outputFile.write(get_markdown(the_message, the_config, entity))
                         outputFile.close()
                     except Exception as e:
                         print(e)
@@ -155,97 +155,97 @@ def createMarkdownFile(entity, folder, theConfig):
 #
 # Parameters:
 #
-#   - fileName: the file to open
-#   - theConfig: all the settings, instance of Config
+#   - filename: the file to open
+#   - the_config: all the settings, instance of Config
 #
 # Returns: a file handle
 #
 # -----------------------------------------------------------------------------
-def openOutputFile(fileName, theConfig):
+def open_output_file(filename, the_config):
 
     outputFile = False
 
     try:
-        outputFile = open(fileName, 'a', encoding="utf-8")
+        outputFile = open(filename, 'a', encoding="utf-8")
 
     except Exception as e:
-        print(theConfig.getStr(theConfig.STR_ERROR) + " " + theConfig.getStr(theConfig.STR_COULD_NOT_OPEN_FILE) + " " + str(e))
+        print(the_config.get_str(the_config.STR_ERROR) + " " + the_config.get_str(the_config.STR_COULD_NOT_OPEN_FILE) + " " + str(e))
         print(e)
 
     return outputFile
 
 # -----------------------------------------------------------------------------
 # 
-# Create the metadata aka FrontMatter for the Markdown file
+# Create the metadata aka frontmatter for the Markdown file
 #
 # Parameters:
 #
-#    theMessage - the messages to be added
-#    theConfig - the configuration, an instance of Config
+#    the_message - the messages to be added
+#    the_config - the configuration, an instance of Config
 #
 # Notes:
 #
 #    `service` is what was used to send/receive message e.g. YAML_SERVICE_SMS
 #
 # -----------------------------------------------------------------------------
-def getFrontMatter(theMessage, theConfig):
+def get_frontmatter(the_message, the_config):
 
-    frontMatter = YAML_DASHES 
-    frontMatter += YAML_TAGS + ": ["
+    frontmatter = YAML_DASHES 
+    frontmatter += YAML_TAGS + ": ["
     
-    if theConfig.service == YAML_SERVICE_EMAIL:
-        frontMatter += TAG_EMAIL
+    if the_config.service == YAML_SERVICE_EMAIL:
+        frontmatter += TAG_EMAIL
     else:
-        frontMatter += TAG_CHAT
+        frontmatter += TAG_CHAT
 
-    if theMessage.groupSlug:
-        frontMatter += ", " + theMessage.groupSlug
-    frontMatter += "]" + NEW_LINE
-    frontMatter += YAML_PEOPLE + ": ["
+    if the_message.group_slug:
+        frontmatter += ", " + the_message.group_slug
+    frontmatter += "]" + NEW_LINE
+    frontmatter += YAML_PEOPLE + ": ["
     
-    if not theMessage.groupSlug:
-        frontMatter += theMessage.fromSlug
+    if not the_message.group_slug:
+        frontmatter += the_message.from_slug
 
-        if len(theMessage.toSlugs) and theMessage.isNoteToSelf() == False:
-            frontMatter += ", " + ", ".join(theMessage.toSlugs)
+        if len(the_message.toSlugs) and the_message.is_note_to_self() == False:
+            frontmatter += ", " + ", ".join(the_message.toSlugs)
     
-    elif len(theMessage.groupSlug):
+    elif len(the_message.group_slug):
         firstTime = True
-        for group in theConfig.groups:
-            if group.slug == theMessage.groupSlug:
-                for personSlug in group.members:
+        for group in the_config.groups:
+            if group.slug == the_message.group_slug:
+                for person_slug in group.members:
                     if not firstTime: 
-                        frontMatter += ", "
-                    frontMatter += personSlug
+                        frontmatter += ", "
+                    frontmatter += person_slug
                     firstTime = False
                 break
 
-    elif len(theMessage.fromSlug) and theMessage.fromSlug != theConfig.me.slug:
-        frontMatter += ", " + theMessage.fromSlug
+    elif len(the_message.from_slug) and the_message.from_slug != the_config.me.slug:
+        frontmatter += ", " + the_message.from_slug
 
-    if len(theMessage.dateStr)==0: 
-        dateStr = "null"
+    if len(the_message.date_str)==0: 
+        date_str = "null"
     else:
-        dateStr = theMessage.dateStr
+        date_str = the_message.date_str
 
-    if len(theMessage.timeStr)==0: 
-        timeStr = "null"
+    if len(the_message.time_str)==0: 
+        time_str = "null"
     else: 
-        timeStr = theMessage.timeStr
+        time_str = the_message.time_str
 
-    frontMatter += "]" + NEW_LINE
-    frontMatter += YAML_DATE + ": " + dateStr + NEW_LINE
-    frontMatter += YAML_TIME + ": " + timeStr + NEW_LINE
-    subject = theMessage.subject
+    frontmatter += "]" + NEW_LINE
+    frontmatter += YAML_DATE + ": " + date_str + NEW_LINE
+    frontmatter += YAML_TIME + ": " + time_str + NEW_LINE
+    subject = the_message.subject
 
     if subject and isinstance(subject, str): 
         # replace double quotes with single quotes inside double-quoted strings
         subject = re.sub(r'"([^"]*)"', lambda match: "'" + match.group(1) + "'", subject)
-        frontMatter += YAML_SUBJECT + ": \"" + subject + "\"" + NEW_LINE
-    frontMatter += YAML_SERVICE + ": " + theConfig.service + NEW_LINE
-    frontMatter += YAML_DASHES + NEW_LINE
+        frontmatter += YAML_SUBJECT + ": \"" + subject + "\"" + NEW_LINE
+    frontmatter += YAML_SERVICE + ": " + the_config.service + NEW_LINE
+    frontmatter += YAML_DASHES + NEW_LINE
 
-    return frontMatter
+    return frontmatter
 
 # -----------------------------------------------------------------------------
 #
@@ -253,94 +253,94 @@ def getFrontMatter(theMessage, theConfig):
 #
 # Parameters:
 #
-#    - theMessage - the message being converted to Markdown
-#    - theConfig - for settings
+#    - the_message - the message being converted to Markdown
+#    - the_config - for settings
 #    - people - array of Persons
 #
 # -----------------------------------------------------------------------------
-def getMarkdown(theMessage, theConfig, people):
+def get_markdown(the_message, the_config, people):
 
     text = ""
-    firstName = ""
-    fromSlug = theMessage.fromSlug
+    first_name = ""
+    from_slug = the_message.from_slug
 
-    if theConfig.timeNameSeparate:
-        text += NEW_LINE + theMessage.timeStr + NEW_LINE
+    if the_config.timeNameSeparate:
+        text += NEW_LINE + the_message.time_str + NEW_LINE
 
-    if fromSlug:
-        firstName = theConfig.getFirstNameBySlug(fromSlug)
+    if from_slug:
+        first_name = the_config.get_first_name_by_slug(from_slug)
     else: 
         # assume it's from me
-        if theConfig.me.slug not in theMessage.toSlugs:
-            firstName = theConfig.me.firstName
+        if the_config.me.slug not in the_message.toSlugs:
+            first_name = the_config.me.first_name
 
     # I've seen cases with SMS Backup where `from_address="null"` and,
     # in turn, code can't get a source slug, so we skip the message
-    if not firstName:
-        if (theConfig.debug):
-            print("No first name, fromSlug='" + fromSlug + "'")
-            print(theMessage)
+    if not first_name:
+        if (the_config.debug):
+            print("No first name, from_slug='" + from_slug + "'")
+            print(the_message)
         return text
 
     # don't include first name if Note-to-Self since I know who I am!
-    if not theMessage.isNoteToSelf(): 
-        text += firstName
+    if not the_message.is_note_to_self(): 
+        text += first_name
 
-    if not theConfig.timeNameSeparate and theConfig.includeTimestamp:
-        if not theMessage.isNoteToSelf():
-            text += " " + theConfig.getStr(theConfig.STR_AT) + " "
-        text += theMessage.timeStr
+    if not the_config.timeNameSeparate and the_config.includeTimestamp:
+        if not the_message.is_note_to_self():
+            text += " " + the_config.get_str(the_config.STR_AT) + " "
+        text += the_message.time_str
 
-    if theConfig.colonAfterContext: 
+    if the_config.colon_after_context: 
         text += ":"
 
-    if not theConfig.timeNameSeparate: 
+    if not the_config.time_name_separate: 
         text += NEW_LINE
 
-    for theAttachment in theMessage.attachments:
-        link = theAttachment.generateLink(theConfig)
+    for the_attachment in the_message.attachments:
+        link = the_attachment.generate_link(the_config)
         text += link
 
     text += NEW_LINE
 
     try:
-        quotedText = theMessage.quote.text
-        lengthOfQuotedText = len(theMessage.quote.text)
+        quoted_text = the_message.quote.text
+        len_quoted_text = len(the_message.quote.text)
 
-        if theConfig.includeQuote and hasattr(theMessage.quote, 'text') and lengthOfQuotedText:
+        if the_config.include_quote and hasattr(the_message.quote, 'text') and len_quoted_text:
         
-            if lengthOfQuotedText:
+            if len_quoted_text:
                 text += MD_QUOTE + MD_QUOTE
-                if theMessage.quote.authorName:
-                    text += theMessage.quote.authorName + ": "
-                if lengthOfQuotedText > theConfig.MAX_LEN_QUOTED_TEXT:
-                    quotedText = quotedText[:theConfig.MAX_LEN_QUOTED_TEXT]
-                    lastSpace = quotedText.rfind(' ')
-                    text += quotedText[:lastSpace] 
+                if the_message.quote.author_name:
+                    text += the_message.quote.author_name + ": "
+                if len_quoted_text > the_config.MAX_LEN_QUOTED_TEXT:
+                    quoted_text = quoted_text[:the_config.MAX_LEN_QUOTED_TEXT]
+                    last_space = quoted_text.rfind(' ')
+                    text += quoted_text[:last_space] 
                     text += "..."
                 else: 
-                    text += quotedText
+                    text += quoted_text
 
                 text += NEW_LINE + MD_QUOTE + NEW_LINE
     except:
         pass
 
-    if len(theMessage.body):
-        if theConfig.service != YAML_SERVICE_EMAIL:
+    if len(the_message.body):
+        if the_config.service != YAML_SERVICE_EMAIL:
             text += MD_QUOTE
-        text += theMessage.body + NEW_LINE
+        text += the_message.body + NEW_LINE
 
-    if theConfig.includeReactions and len(theMessage.reactions):
+    if the_config.include_reactions and len(the_message.reactions):
         text += MD_QUOTE + NEW_LINE + MD_QUOTE
-        for theReaction in theMessage.reactions:
-            firstName = theConfig.getFirstNameBySlug(theReaction.fromSlug)
-            text += str(theReaction.emoji) + " *" + firstName.lower() + "*   "
+        for the_reaction in the_message.reactions:
+            first_name = the_config.get_first_name_by_slug(the_reaction.from_slug)
+            text += str(the_reaction.emoji) + " *" + first_name.lower() + "*   "
         text += NEW_LINE
 
     # can have messages with only a body or reactions or attachments
-    if len(theMessage.body) or len(theMessage.reactions):
+    if len(the_message.body) or len(the_message.reactions):
         text += NEW_LINE
-    elif not len(theMessage.attachments): # if none of them then it's invalid
+    elif not len(the_message.attachments): # if none of them then it's invalid
         text = ""
 
     return text
@@ -351,7 +351,7 @@ def getMarkdown(theMessage, theConfig, people):
 #
 # Parameters:
 #
-#    - theConfig - all of the Config(uration)
+#    - the_config - all of the Config(uration)
 #
 # Notes:
 #
@@ -359,14 +359,14 @@ def getMarkdown(theMessage, theConfig, people):
 #      of the other messages
 # 
 # -----------------------------------------------------------------------------
-def createDailyNotesFolders(theConfig):
+def create_daily_notes_folders(the_config):
 
-    dailyNotesFolder = os.path.join(theConfig.outputFolder, theConfig.dailyNotesSubFolder)
-    createFolder(dailyNotesFolder)
-    mediaSubFolder = os.path.join(dailyNotesFolder, theConfig.mediaSubFolder)
-    createFolder(mediaSubFolder)
+    daily_notes_folder = os.path.join(the_config.output_folder, the_config.daily_notes_subfolder)
+    create_folder(daily_notes_folder)
+    media_subfolder = os.path.join(daily_notes_folder, the_config.media_subfolder)
+    create_folder(media_subfolder)
 
-    return dailyNotesFolder
+    return daily_notes_folder
 
 # -----------------------------------------------------------------------------
 #
@@ -380,27 +380,27 @@ def createDailyNotesFolders(theConfig):
 # Parameters:
 #
 #   - entity: a Person or a Group object
-#   - peopleFolder: root folder where the subfolder per-person / files created
-#   - theMessage: the current message being processed
-#   - theConfig - all of the Config(uration)
+#   - people_folder: root folder where the subfolder per-person / files created
+#   - the_message: the current message being processed
+#   - the_config - all of the Config(uration)
 #
 # -----------------------------------------------------------------------------
-def getMediaFolderName(entity, peopleFolder, theMessage, theConfig):
+def get_media_folder_name(entity, people_folder, the_message, the_config):
 
     folder = ""
 
     # if the daily notes folder is defined, put the notes-to-self in there
     if type(entity) == group.Group:
-        folder = os.path.join(peopleFolder, entity.slug)
+        folder = os.path.join(people_folder, entity.slug)
 
-    elif theMessage.isNoteToSelf() and len(theConfig.dailyNotesSubFolder):
-        folder = os.path.join(theConfig.outputFolder, theConfig.dailyNotesSubFolder)
+    elif the_message.is_note_to_self() and len(the_config.daily_notes_subfolder):
+        folder = os.path.join(the_config.output_folder, the_config.daily_notes_subfolder)
 
-    elif theMessage.hasAttachment() and theMessage.fromSlug == theConfig.me.slug:
-        folder = os.path.join(peopleFolder, theConfig.me.slug)
+    elif the_message.hasAttachment() and the_message.from_slug == the_config.me.slug:
+        folder = os.path.join(people_folder, the_config.me.slug)
     
     else:
-        folder = os.path.join(peopleFolder, entity.slug)
+        folder = os.path.join(people_folder, entity.slug)
 
     return folder
 
@@ -415,21 +415,21 @@ def getMediaFolderName(entity, peopleFolder, theMessage, theConfig):
 # Parameters:
 #
 #   - entity: a Person or a Group object
-#   - outputFolder: root folder where the subfolder per-person / files created
-#   - theMessage: the current message being processed
-#   - theConfig: the configuration
+#   - output_folder: root folder where the subfolder per-person / files created
+#   - the_message: the current message being processed
+#   - the_config: the configuration
 #
 # -----------------------------------------------------------------------------
-def getMarkdownFolderName(entity, outputFolder, theMessage, theConfig):
+def get_markdown_folder_name(entity, output_folder, the_message, the_config):
 
     folder = ""
 
     # if the daily notes folder is defined, put the notes-to-self in there
     if isinstance(entity, group.Group):
-        folder = os.path.join(outputFolder, entity.slug)
-    elif theMessage.isNoteToSelf() and len(theConfig.dailyNotesSubFolder):
-         folder = theConfig.dailyNotesSubFolder
+        folder = os.path.join(output_folder, entity.slug)
+    elif the_message.is_note_to_self() and len(the_config.daily_notes_subfolder):
+         folder = the_config.daily_notes_subfolder
     else:
-        folder = os.path.join(outputFolder, entity.slug)
+        folder = os.path.join(output_folder, entity.slug)
 
     return folder
