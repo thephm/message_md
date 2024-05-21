@@ -6,7 +6,7 @@ class Person:
         self.first_name = ""
         self.last_name = ""
         self.mobile = ""
-        self.linkedIn_id = ""
+        self.linkedin_id = ""
         self.email_addresses = [] # collection of email addresses
         self.conversation_id = ""
         self.folder_created = False

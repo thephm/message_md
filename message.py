@@ -1,3 +1,6 @@
+# Generic message between two people. The message can have reactions
+# and attachments.
+
 import time
 
 NEW_LINE = "\n"
@@ -5,17 +8,17 @@ NEW_LINE = "\n"
 # The message being replied to, if this is a reply vs. a new message
 class Quote:
     def __init__(self):
-        self.id = ""         # timestamp of the message being replied
+        self.id = ""          # timestamp of the message being replied
         self.author_slug = "" # person-slug being quoted
         self.author_name = "" # name of the person being quoted
-        self.text = ""       # text being quoted
+        self.text = ""        # text being quoted
 
 # Typically an emoji reaction to someone's message
 class Reaction:
     def __init__(self):
         self.emoji = ""
         self.target_time_sent = 0 # which timestamp the emoji relates to
-        self.from_slug = "" # person who had the reaction
+        self.from_slug = ""       # person who had the reaction
 
 # An actual message
 # 
@@ -23,24 +26,24 @@ class Reaction:
 # - If personSlug is non-blank, then group_slug will be blank
 class Message:
     def __init__(self):
-        self.id = ""              # ID from the messaging system
-        self.time = 0             # time.struct_time object
-        self.timestamp = 0        # original timestamp in the message
-        self.date_str = ""         # YYYY-MM-DD
-        self.time_str = ""         # hh:mm in 24 hour clock
-        self.group_slug = ""       # the group the message sent to
-        self.phone_number = ""     # phone number of the sender
-        self.from_slug = ""        # Person `slug` of who the message is from
-        self.to_slugs = []         # Person `slug` who the message was sent to
-        self.body = ""            # actual content of the message
+        self.id = ""            # ID from the messaging system
+        self.time = 0           # time.struct_time object
+        self.timestamp = 0      # original timestamp in the message
+        self.date_str = ""      # YYYY-MM-DD
+        self.time_str = ""      # hh:mm in 24 hour clock
+        self.group_slug = ""    # the group the message sent to
+        self.phone_number = ""  # phone number of the sender
+        self.from_slug = ""     # Person `slug` of who the message is from
+        self.to_slugs = []      # Person `slug` who the message was sent to
+        self.body = ""          # actual content of the message
         self.target_sent_timestamp = "" # which timestamp the emoji relates to
-                                  # @todo this is specific to Signal 
-        self.processed = False    # True if the message been dealt with
-        self.quote = Quote()      # quoted text if replying
+                                # @todo this is specific to Signal 
+        self.processed = False  # True if the message been dealt with
+        self.quote = Quote()    # quoted text if replying
         self.attachments = []
         self.reactions = []
         self.subject = ""
-        self.service = ""         # mesaging service e.g. YAML_SERVICE_SIGNAL
+        self.service = ""       # mesaging service e.g. YAML_SERVICE_SIGNAL
 
     def __str__(self):
         output = "id: " + self.id + NEW_LINE
@@ -50,7 +53,7 @@ class Message:
         output += "from_slug: " + self.from_slug + NEW_LINE
         output += "to_slugs: " + str(self.to_slugs) + NEW_LINE
         output += "group_slug: " + self.group_slug + NEW_LINE
-        output += "phone_number: " + self.phone_number + NEW_LINE
+        output += "phone_number: " + str(self.phone_number) + NEW_LINE
         output += "processed: " + str(self.processed) + NEW_LINE
         output += "attachments: " + str(len(self.attachments)) + NEW_LINE
         output += "reactions: " + str(len(self.reactions)) + NEW_LINE
@@ -109,7 +112,7 @@ class DatedMessages:
 def add_messages(messages, the_config):
 
     for the_message in messages:
-
+                
         if the_message and len(the_message.group_slug):
             for group in the_config.groups:
                 if the_message.group_slug == group.slug:
@@ -117,7 +120,7 @@ def add_messages(messages, the_config):
                     the_message.processed = True
 
         if the_message and not the_message.processed:
-            
+                
             if the_message.is_note_to_self():
                 add_message(the_message, the_config.me, the_config.reversed)
                 the_message.processed = True
@@ -128,6 +131,7 @@ def add_messages(messages, the_config):
                         add_message(the_message, person, the_config.reversed)
                         the_message.processed = True
                         break
+
     return
 
 # -----------------------------------------------------------------------------
@@ -149,7 +153,6 @@ def add_message(the_message, thing, reversed=False):
     date_found = False
 
     try:
-
         # go through existing dates and add the message there
         for messages_on_date in thing.messages:
             if the_message.date_str == messages_on_date.date_str:
@@ -163,6 +166,7 @@ def add_message(the_message, thing, reversed=False):
         if date_found == False:
             new_date = DatedMessages()
             new_date.date_str = the_message.date_str
+
             if reversed:
                 new_date.messages.insert(0, the_message)
             else:

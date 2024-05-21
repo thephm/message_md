@@ -16,7 +16,7 @@ CONFIG_FOLDER = "config"
 STRINGS_FILE_NAME = "strings.json"
 PEOPLE_FILE_NAME  = "people.json"
 GROUPS_FILE_NAME  = "groups.json"
-MIME_TYPES_FILE_NAME = "MIMETypes.json"
+MIME_TYPES_FILE_NAME = "mime_types.json"
 RESOURCES_FOLDER = "../../github/message_md/resources"
 
 # not used yet, thinking about it
@@ -141,7 +141,7 @@ class _Config:
         self.strings = []
         self.people = []
         self.groups = []
-        self.MIME_types = []
+        self.mime_types = []
 
         self.debug = False
 
@@ -150,7 +150,7 @@ class _Config:
         # set the default config folder to the folder where this
         # script was run plus 
         folder = os.path.dirname(os.path.realpath(__file__))
-        self.configFolder = os.path.join(folder, CONFIG_FOLDER)
+        self.config_folder = os.path.join(folder, CONFIG_FOLDER)
 
         self.settings_filename = "settings.json"
         self.service = ""
@@ -185,26 +185,26 @@ class _Config:
     def __str__(self):
         
         output = self.SETTING_MY_SLUG + ": " + str(self.me.slug) + "\n"
-        output += "config_folder: " + str(self.configFolder) + "\n"
-        output += self.SETTING_ATTACHMENTS_SUBFOLDER + ": " + str(self.attachmentsSubFolder) + "\n"
-        output += self.SETTING_ARCHIVE_SUBFOLDER + ": " + str(self.archiveSubFolder) + "\n"
+        output += "config_folder: " + str(self.config_folder) + "\n"
+        output += self.SETTING_ATTACHMENTS_SUBFOLDER + ": " + str(self.attachments_subfolder) + "\n"
+        output += self.SETTING_ARCHIVE_SUBFOLDER + ": " + str(self.archive_subfolder) + "\n"
         output += self.SETTING_OUTPUT_FOLDER + ": " + str(self.output_folder) + "\n"
-        output += self.SETTING_MEDIA_SUBFOLDER + ": " + str(self.mediaSubFolder) + "\n"
-        output += self.SETTING_IMAGE_EMBED + ": " + str(self.imageEmbed) + "\n"
-        output += self.SETTING_IMAGE_WIDTH + ": " + str(self.imageWidth) + "\n"
-        output += self.SETTING_FOLDER_PER_PERSON + ": " + str(self.folderPerPerson) + "\n"
-        output += self.SETTING_FILE_PER_PERSON + ": " + str(self.filePerPerson) + "\n"
-        output += self.SETTING_FILE_PER_DAY + ": " + str(self.filePerDay) + "\n"
-        output += self.SETTING_INCLUDE_TIMESTAMP + ": " + str(self.includeTimestamp) + "\n"
-        output += self.SETTING_INCLUDE_REACTIONS + ": " + str(self.includeReactions) + "\n"
-        output += self.SETTING_INCLUDE_QUOTE + ": " + str(self.includeQuote) + "\n"
-        output += self.SETTING_COLON_AFTER_CONTEXT + ": " + str(self.colonAfterContext) + "\n"
-        output += self.SETTING_TIME_NAME_SEPARATE + ": " + str(self.timeNameSeparate) + "\n"
-        output += self.SETTING_DAILY_NOTES_SUBFOLDER + ": " + str(self.dailyNotesSubFolder) + "\n"
+        output += self.SETTING_MEDIA_SUBFOLDER + ": " + str(self.media_subfolder) + "\n"
+        output += self.SETTING_IMAGE_EMBED + ": " + str(self.image_embed) + "\n"
+        output += self.SETTING_IMAGE_WIDTH + ": " + str(self.image_width) + "\n"
+        output += self.SETTING_FOLDER_PER_PERSON + ": " + str(self.folder_per_person) + "\n"
+        output += self.SETTING_FILE_PER_PERSON + ": " + str(self.file_per_person) + "\n"
+        output += self.SETTING_FILE_PER_DAY + ": " + str(self.file_per_day) + "\n"
+        output += self.SETTING_INCLUDE_TIMESTAMP + ": " + str(self.include_timestamp) + "\n"
+        output += self.SETTING_INCLUDE_REACTIONS + ": " + str(self.include_reactions) + "\n"
+        output += self.SETTING_INCLUDE_QUOTE + ": " + str(self.include_quote) + "\n"
+        output += self.SETTING_COLON_AFTER_CONTEXT + ": " + str(self.colon_after_context) + "\n"
+        output += self.SETTING_TIME_NAME_SEPARATE + ": " + str(self.time_name_separate) + "\n"
+        output += self.SETTING_DAILY_NOTES_SUBFOLDER + ": " + str(self.daily_notes_subfolder) + "\n"
         output += self.SETTING_IMAP_SERVER + ": " + str(self.imap_server) + "\n"
         output += self.SETTING_EMAIL_ACCOUNT + ": " + str(self.email_account) + "\n"
-        output += self.SETTING_EMAIL_FOLDERS + ": " + str(self.emailFolders) + "\n"
-        output += self.SETTING_NOT_EMAIL_FOLDERS + ": " + str(self.notEmailFolders) + "\n"
+        output += self.SETTING_EMAIL_FOLDERS + ": " + str(self.email_folders) + "\n"
+        output += self.SETTING_NOT_EMAIL_FOLDERS + ": " + str(self.not_email_folders) + "\n"
         output += self.SETTING_MAX_MESSAGES + ": " + str(self.max_messages) + "\n"
         
         return output
@@ -212,6 +212,7 @@ class _Config:
     def load_settings(self):
 
         result = False
+        settings_file = False
 
         try:
             settings_filename = os.path.join(self.config_folder, self.settings_filename)
@@ -269,7 +270,7 @@ class _Config:
            
                 result = True
 
-            settings_file.close()
+                settings_file.close()
 
         except Exception as e:
             print("Error loading settings.")
@@ -295,13 +296,13 @@ class _Config:
 
         parser = ArgumentParser()
 
-        parser.add_argument("-c", "--config", dest="configFolder", default=".",
+        parser.add_argument("-c", "--config", dest="config_folder", default=".",
                             help=self.STR_CONFIG_FOLDER)
         
         parser.add_argument("-s", "--source_folder", dest="source_folder", default=".",
                             help=self.STR_SOURCE_FOLDER)
         
-        parser.add_argument("-f", "--file", dest="fileName",
+        parser.add_argument("-f", "--file", dest="filename",
                             help=self.STR_SOURCE_MESSAGE_FILE, metavar="FILE")
         
         parser.add_argument("-o", "--output_folder", dest="output_folder", default=".",
@@ -370,8 +371,8 @@ class _Config:
         if args.source_folder:
             self.source_folder = args.source_folder
 
-        if args.fileName:
-            self.fileName = os.path.join(args.source_folder, args.fileName)
+        if args.filename:
+            self.filename = os.path.join(args.source_folder, args.filename)
         
         if args.output_folder:
             self.output_folder = args.output_folder
@@ -395,13 +396,13 @@ class _Config:
             self.max_messages = int(args.max_messages)
 
         if self.load_strings():
-            if self.load_MIME_types():
+            if self.load_mime_types():
                 if self.load_people():
                     if self.load_groups():
                         loaded = True
 
-        self.peopleFolder = os.path.join(self.output_folder, self.peopleSubFolder)
-        self.groupsFolder = os.path.join(self.peopleFolder, self.groupsSubFolder)
+        self.people_folder = os.path.join(self.output_folder, self.people_subfolder)
+        self.groups_folder = os.path.join(self.people_folder, self.groups_subfolder)
 
         if self.debug == True:
             print(self)
@@ -417,9 +418,9 @@ class _Config:
                     print('Need an IMAP server. Use "-i <server>"')
                 else:
                     init = True
-            elif not self.fileName:
+            elif not self.filename:
                 print('No messages file specified')
-            elif not os.path.exists(self.fileName):
+            elif not os.path.exists(self.filename):
                 print('The messages file could not be found')
             else:
                 init = True
@@ -434,14 +435,14 @@ class _Config:
         self.source_folder = folderName
         
     # Load strings used in the script and return the number of strings loaded
-    def loadStrings(self):
+    def load_strings(self):
 
         try:
-            stringsFileName = os.path.join(RESOURCES_FOLDER, STRINGS_FILE_NAME)
-            stringsFile = open(stringsFileName, 'r')
+            strings_filename = os.path.join(RESOURCES_FOLDER, STRINGS_FILE_NAME)
+            strings_file = open(strings_filename, 'r')
 
-            if stringsFile:
-                for line in stringsFile:
+            if strings_file:
+                for line in strings_file:
                     line = line.rstrip()
                     try:
                         x = json.loads(line)
@@ -449,43 +450,43 @@ class _Config:
                         self.strings.append(string)
                     except Exception as e:
                         pass
-                stringsFile.close()
+                strings_file.close()
             else:
-                print("failed to open " + stringsFileName)
+                print("failed to open " + strings_filename)
         except Exception as e:
             print(e)
         
         return len(self.strings)
     
     # Given a filename, return the MIME type or None if none found
-    def get_MIME_Type(self, filename):
+    def get_mime_type(self, filename):
 
-        MIME_types = self.MIME_types
+        mime_types = self.mime_types
 
         # get the suffix
         parts = filename.split('.')
         suffix = parts[parts.length - 1]
     
         # find the type
-        for MIME_type, ext in MIME_types.items():
+        for mime_type, ext in mime_types.items():
             if ext == suffix:
-                return MIME_type
+                return mime_type
             
         return None
         
     # Load the mapping of file extensions to MIME type, e.g. `jpg` is JPEG
-    def load_MIME_types(self):
+    def load_mime_types(self):
 
-        self.MIME_types = False
+        self.mime_types = False
 
         try:
-            MIME_types_filename = os.path.join(RESOURCES_FOLDER, MIME_TYPES_FILE_NAME)
-            MIME_types_file = open(MIME_types_filename, 'r')
-            self.MIME_types = json.load(MIME_types_file)
+            mime_types_filename = os.path.join(RESOURCES_FOLDER, MIME_TYPES_FILE_NAME)
+            mime_types_file = open(mime_types_filename, 'r')
+            self.mime_types = json.load(mime_types_file)
         except:
             print(self.get_str(self.STR_COULD_NOT_LOAD_MIME_TYPES))
 
-        return self.MIME_types
+        return self.mime_types
     
     # Lookup a person's first name from their mobile number
     def get_first_name_by_number(self, number):

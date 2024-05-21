@@ -1,3 +1,6 @@
+# Functions to format message.Message objects into Markdown including 
+# rections and embedded ![[wikilinks]] to any attachments.
+
 import os
 import shutil
 
@@ -43,7 +46,7 @@ def setup_folders(the_config):
     try:
         Path(the_config.archive_subfolder).mkdir(parents=True, exist_ok=True)
     except Exception as e:
-        print(the_config.getStr(the_config.STR_COULD_CREATE_ARCHIVE_SUBFOLDER) + ": " + messages_file)
+        print(the_config.get_str(the_config.STR_COULD_CREATE_ARCHIVE_SUBFOLDER) + ": " + messages_file)
         print(e)
         return False
 
@@ -58,9 +61,9 @@ def setup_folders(the_config):
 
     except Exception as e:
         if the_config.debug:
-            print(the_config.getStr(the_config.STR_COULD_NOT_MOVE_MESSAGES_FILE) + ": " + messages_file)
+            print(the_config.get_str(the_config.STR_COULD_NOT_MOVE_MESSAGES_FILE) + ": " + messages_file)
         else:
-            print(the_config.getStr(the_config.STR_COULD_NOT_COPY_MESSAGES_FILE) + ": " + messages_file)
+            print(the_config.get_str(the_config.STR_COULD_NOT_COPY_MESSAGES_FILE) + ": " + messages_file)
             print(e)
         pass
 
@@ -93,25 +96,25 @@ def get_markdown(the_config, load_messages, messages, reactions):
         if load_messages(dest_file, messages, reactions, the_config):
             
             # add the reactions to the corresponding messages
-            message.addReactions(messages, reactions)
+            message.add_reactions(messages, reactions)
 
             # divy up messages to the groups and people they were with
-            message.addMessages(messages, the_config)
+            message.add_messages(messages, the_config)
 
             # for email service, the attachments are put in the right folder 
             # as each email attachment is processed. No need to move them 
             if the_config.service != markdown.YAML_SERVICE_EMAIL:
-                attachment.moveAttachments(the_config.people, the_config.people_folder, the_config)
-                attachment.moveAttachments(the_config.groups, the_config.groups_folder, the_config)
+                attachment.move_attachments(the_config.people, the_config.people_folder, the_config)
+                attachment.move_attachments(the_config.groups, the_config.groups_folder, the_config)
 
             # generate the Markdown for each person
             for the_person in the_config.people:
                 folder = os.path.join(the_config.people_folder, the_person.slug)
-                markdown.createMarkdownFile(the_person, folder, the_config)
+                markdown.create_markdown_file(the_person, folder, the_config)
 
             # generate the Markdown for each group
             for the_group in the_config.groups:
                 folder = os.path.join(the_config.groups_folder, the_group.slug)
-                markdown.createMarkdownFile(the_group, folder, the_config)
+                markdown.create_markdown_file(the_group, folder, the_config)
 
     return True

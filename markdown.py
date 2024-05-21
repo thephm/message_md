@@ -1,3 +1,6 @@
+# Functions to generate the actual Markdown files include any 
+# corresponding metadata a.k.a. frontmatter.
+
 import os
 import re
 import time
@@ -116,7 +119,7 @@ def create_markdown_file(entity, folder, the_config):
                 continue
 
             # convert to Markdown and if no message, move on to the next one
-            the_markdown = get_markdown(the_message, the_config, entity)
+            the_markdown = format_markdown(the_message, the_config, entity)
             if not len(the_markdown):
                 continue
 
@@ -132,21 +135,21 @@ def create_markdown_file(entity, folder, the_config):
             
             exists = os.path.exists(filename)
 
-            outputFile = open_output_file(filename, the_config)
+            output_file = open_output_file(filename, the_config)
             
-            if outputFile:
+            if output_file:
                 # add the front matter if this is a new file
                 if exists == False and (not the_message.is_note_to_self() or the_message.group_slug):
                     frontmatter = get_frontmatter(the_message, the_config)
-                    outputFile.write(frontmatter)
+                    output_file.write(frontmatter)
          
                 # don't add to the file if it's previously created
                 # UNLESS it's a note-to-self
                 age = time.time() - os.path.getctime(filename)
                 if age < WELL_AGED or the_message.is_note_to_self():
                     try:
-                        outputFile.write(get_markdown(the_message, the_config, entity))
-                        outputFile.close()
+                        output_file.write(format_markdown(the_message, the_config, entity))
+                        output_file.close()
                     except Exception as e:
                         print(e)
                         pass
@@ -163,16 +166,16 @@ def create_markdown_file(entity, folder, the_config):
 # -----------------------------------------------------------------------------
 def open_output_file(filename, the_config):
 
-    outputFile = False
+    output_file = False
 
     try:
-        outputFile = open(filename, 'a', encoding="utf-8")
+        output_file = open(filename, 'a', encoding="utf-8")
 
     except Exception as e:
         print(the_config.get_str(the_config.STR_ERROR) + " " + the_config.get_str(the_config.STR_COULD_NOT_OPEN_FILE) + " " + str(e))
         print(e)
 
-    return outputFile
+    return output_file
 
 # -----------------------------------------------------------------------------
 # 
@@ -180,8 +183,8 @@ def open_output_file(filename, the_config):
 #
 # Parameters:
 #
-#    the_message - the messages to be added
-#    the_config - the configuration, an instance of Config
+#    - the_message - the messages to be added
+#    - the_config - the configuration, an instance of Config
 #
 # Notes:
 #
@@ -191,6 +194,8 @@ def open_output_file(filename, the_config):
 def get_frontmatter(the_message, the_config):
 
     frontmatter = YAML_DASHES 
+
+    # add the tags to the frontmatter
     frontmatter += YAML_TAGS + ": ["
     
     if the_config.service == YAML_SERVICE_EMAIL:
@@ -201,27 +206,28 @@ def get_frontmatter(the_message, the_config):
     if the_message.group_slug:
         frontmatter += ", " + the_message.group_slug
     frontmatter += "]" + NEW_LINE
+
+    # add the people to the frontmatter
     frontmatter += YAML_PEOPLE + ": ["
     
-    if not the_message.group_slug:
+    if not len(the_message.group_slug):
         frontmatter += the_message.from_slug
 
-        if len(the_message.toSlugs) and the_message.is_note_to_self() == False:
-            frontmatter += ", " + ", ".join(the_message.toSlugs)
+        if len(the_message.to_slugs) and the_message.is_note_to_self() == False:
+            frontmatter += ", " + ", ".join(the_message.to_slugs)
     
     elif len(the_message.group_slug):
-        firstTime = True
         for group in the_config.groups:
             if group.slug == the_message.group_slug:
+                first_time = True
                 for person_slug in group.members:
-                    if not firstTime: 
+                    if not first_time: 
                         frontmatter += ", "
                     frontmatter += person_slug
-                    firstTime = False
+                    first_time = False
                 break
 
-    elif len(the_message.from_slug) and the_message.from_slug != the_config.me.slug:
-        frontmatter += ", " + the_message.from_slug
+    frontmatter += "]" + NEW_LINE
 
     if len(the_message.date_str)==0: 
         date_str = "null"
@@ -233,13 +239,13 @@ def get_frontmatter(the_message, the_config):
     else: 
         time_str = the_message.time_str
 
-    frontmatter += "]" + NEW_LINE
     frontmatter += YAML_DATE + ": " + date_str + NEW_LINE
     frontmatter += YAML_TIME + ": " + time_str + NEW_LINE
     subject = the_message.subject
 
     if subject and isinstance(subject, str): 
         # replace double quotes with single quotes inside double-quoted strings
+        # no, I didn't figure this out on my own, thanks to ChatGPT :) 
         subject = re.sub(r'"([^"]*)"', lambda match: "'" + match.group(1) + "'", subject)
         frontmatter += YAML_SUBJECT + ": \"" + subject + "\"" + NEW_LINE
     frontmatter += YAML_SERVICE + ": " + the_config.service + NEW_LINE
@@ -258,20 +264,20 @@ def get_frontmatter(the_message, the_config):
 #    - people - array of Persons
 #
 # -----------------------------------------------------------------------------
-def get_markdown(the_message, the_config, people):
+def format_markdown(the_message, the_config, people):
 
     text = ""
     first_name = ""
     from_slug = the_message.from_slug
-
-    if the_config.timeNameSeparate:
+    
+    if the_config.time_name_separate:
         text += NEW_LINE + the_message.time_str + NEW_LINE
 
-    if from_slug:
+    if len(from_slug):
         first_name = the_config.get_first_name_by_slug(from_slug)
     else: 
         # assume it's from me
-        if the_config.me.slug not in the_message.toSlugs:
+        if the_config.me.slug not in the_message.to_slugs:
             first_name = the_config.me.first_name
 
     # I've seen cases with SMS Backup where `from_address="null"` and,
@@ -286,7 +292,7 @@ def get_markdown(the_message, the_config, people):
     if not the_message.is_note_to_self(): 
         text += first_name
 
-    if not the_config.timeNameSeparate and the_config.includeTimestamp:
+    if not the_config.time_name_separate and the_config.include_timestamp:
         if not the_message.is_note_to_self():
             text += " " + the_config.get_str(the_config.STR_AT) + " "
         text += the_message.time_str
@@ -396,7 +402,7 @@ def get_media_folder_name(entity, people_folder, the_message, the_config):
     elif the_message.is_note_to_self() and len(the_config.daily_notes_subfolder):
         folder = os.path.join(the_config.output_folder, the_config.daily_notes_subfolder)
 
-    elif the_message.hasAttachment() and the_message.from_slug == the_config.me.slug:
+    elif the_message.has_attachment() and the_message.from_slug == the_config.me.slug:
         folder = os.path.join(people_folder, the_config.me.slug)
     
     else:
@@ -428,7 +434,7 @@ def get_markdown_folder_name(entity, output_folder, the_message, the_config):
     if isinstance(entity, group.Group):
         folder = os.path.join(output_folder, entity.slug)
     elif the_message.is_note_to_self() and len(the_config.daily_notes_subfolder):
-         folder = the_config.daily_notes_subfolder
+        folder = the_config.daily_notes_subfolder
     else:
         folder = os.path.join(output_folder, entity.slug)
 

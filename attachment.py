@@ -41,12 +41,12 @@ class Attachment:
     def add_suffix(self, the_config):
         filename = self.id
         try:
-            suffix = the_config.MIMETypes[self.type]
+            suffix = the_config.mime_types[self.type]
             if len(suffix):
                 filename += "." + suffix
 
         except Exception as e:
-            print(the_config.getStr(the_config.STR_UNKNOWN_MIME_TYPE) + ": '" + self.type + "' (" + self.id + ')')
+            print(the_config.get_str(the_config.STR_UNKNOWN_MIME_TYPE) + ": '" + self.type + "' (" + self.id + ')')
             print(e)
             pass
 
@@ -87,7 +87,7 @@ class Attachment:
 #   - the_config - all the configuration
 # 
 # -----------------------------------------------------------------------------
-def moveAttachments(entities, folder, the_config):
+def move_attachments(entities, folder, the_config):
 
     source_file = ""
     dest_file = ""
@@ -95,17 +95,17 @@ def moveAttachments(entities, folder, the_config):
     for entity in entities:
         for dated_messages in entity.messages:
             for the_message in dated_messages.messages:
-                dest_folder = markdown.getMediaFolderName(entity, folder, the_message, the_config)
+                dest_folder = markdown.get_media_folder_name(entity, folder, the_message, the_config)
                 dest_folder = os.path.join(dest_folder, the_config.media_subfolder)
 
                 # create the `media` subfolder if it doesn't exist
                 if len(the_message.attachments) and not os.path.exists(dest_folder):
-                    markdown.createFolder(dest_folder)
+                    markdown.create_folder(dest_folder)
 
                 for the_attachment in the_message.attachments:
                     
                     if len(the_attachment.id):
-                        source_file = os.path.join(the_config.sourceFolder, the_config.attachments_subfolder)
+                        source_file = os.path.join(the_config.source_folder, the_config.attachments_subfolder)
                         source_file = os.path.join(source_file, the_attachment.id)
                         
                         # Signal doesn't add a file suffix, so we add it here
@@ -121,9 +121,8 @@ def moveAttachments(entities, folder, the_config):
                             try: 
                                 if the_config.debug:
                                     shutil.copy(source_file, dest_file)
-                                    print('copied')
                                 else:
                                     shutil.move(source_file, dest_file)
                             except Exception as e:
-                                print(the_config.getStr(the_config.STR_COULD_NOT_MOVE_THE_ATTACHMENT) + ": " + source_file + " -> " + dest_file)
+                                print(the_config.get_str(the_config.STR_COULD_NOT_MOVE_THE_ATTACHMENT) + ": " + source_file + " -> " + dest_file)
                                 print(e)
