@@ -114,8 +114,8 @@ def move_attachments(entities, folder, the_config):
                         else:
                             dest_file = os.path.join(dest_folder, the_attachment.id)
 
-                        if the_config.debug:
-                            print(source_file + ' -> ' + dest_file)
+#                        if the_config.debug:
+#                            print(source_file + ' -> ' + dest_file)
                         
                         if os.path.exists(source_file) and not os.path.exists(dest_file):
                             try: 

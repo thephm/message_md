@@ -1,5 +1,8 @@
-# Generic message between two people. The message can have reactions
-# and attachments.
+# -----------------------------------------------------------------------------
+#
+# Generic message between people. A message can have reactions and attachments.
+#
+# -----------------------------------------------------------------------------
 
 import time
 
@@ -20,10 +23,15 @@ class Reaction:
         self.target_time_sent = 0 # which timestamp the emoji relates to
         self.from_slug = ""       # person who had the reaction
 
-# An actual message
+# -----------------------------------------------------------------------------
+#
+# An actual message.
 # 
-# - If group_slug is non-blank, then personSlug will be blank
-# - If personSlug is non-blank, then group_slug will be blank
+# - If `group_slug`` is non-blank, then `personSlug`` will be blank
+# - If `personSlug`` is non-blank, then `group_slug`` will be blank
+# 
+# -----------------------------------------------------------------------------
+
 class Message:
     def __init__(self):
         self.id = ""            # ID from the messaging system
@@ -101,7 +109,7 @@ class DatedMessages:
 
 # -----------------------------------------------------------------------------
 #
-# Divy up messages to the groups and people they were with, by day
+# Divy up messages to the groups and people they were with, by day.
 # 
 # Parameters:
 #
@@ -112,7 +120,6 @@ class DatedMessages:
 def add_messages(messages, the_config):
 
     for the_message in messages:
-                
         if the_message and len(the_message.group_slug):
             for group in the_config.groups:
                 if the_message.group_slug == group.slug:
@@ -178,10 +185,10 @@ def add_message(the_message, thing, reversed=False):
 
 # -----------------------------------------------------------------------------
 #
-# Go through all of the messages and then the reactions and add them
-# to the corresponding messages based on their timestamp (and author).
+# Go through all of the messages and then the reactions and add them to the 
+# corresponding messages based on their timestamp (and author).
 #
-# Returns: number of reactions matched
+# Returns: the number of reactions matched
 #
 # -----------------------------------------------------------------------------
 def add_reactions(messages, reactions):

@@ -1,33 +1,35 @@
-{"language":"1","number":"0","text":"string not found"}
+{"language":"1","number":"0","text":"String not found"}
 {"language":"1","number":"1","text":"at"}
 {"language":"1","number":"2","text":"Error:"}
-{"language":"1","number":"3","text":"could not create the output file"}
-{"language":"1","number":"4","text":"person not found"}
-{"language":"1","number":"5","text":"failed to read line"}
-{"language":"1","number":"6","text":"failed to write"}
-{"language":"1","number":"7","text":"could not load MIME types"}
-{"language":"1","number":"8","text":"unknown MIME type"}
-{"language":"1","number":"9","text":"could not move the attachment"}
-{"language":"1","number":"10","text":"could not move the messages file to archive"}
-{"language":"1","number":"11","text":"could not open the messages file"}
-{"language":"1","number":"12","text":"could not create the archive subfolder"}
-{"language":"1","number":"13","text":"phone number not found"}
-{"language":"1","number":"14","text":"output file exists, skipping"}
+{"language":"1","number":"3","text":"Could not create the output file"}
+{"language":"1","number":"4","text":"Person not found"}
+{"language":"1","number":"5","text":"Failed to read line"}
+{"language":"1","number":"6","text":"Failed to write"}
+{"language":"1","number":"7","text":"Could not load MIME types"}
+{"language":"1","number":"8","text":"Unknown MIME type"}
+{"language":"1","number":"9","text":"Could not move the attachment"}
+{"language":"1","number":"10","text":"Could not move the messages file to archive"}
+{"language":"1","number":"11","text":"Could not open the messages file"}
+{"language":"1","number":"12","text":"Could not create the archive subfolder"}
+{"language":"1","number":"13","text":"Phone number not found"}
+{"language":"1","number":"14","text":"Output file exists, skipping"}
 {"language":"1","number":"15","text":"no message body or attachment"}
-{"language":"1","number":"16","text":"source message filename inside source folder"}
-{"language":"1","number":"17","text":"don't print debug messages to stdout"}
-{"language":"1","number":"18","text":"location of the output folder"}
-{"language":"1","number":"19","text":"source folder where the raw message file is"}
-{"language":"1","number":"20","text":"could not load the configuration from: "}
+{"language":"1","number":"16","text":"Source message filename inside source folder"}
+{"language":"1","number":"17","text":"Don't print debug messages to stdout"}
+{"language":"1","number":"18","text":"Location of the output folder"}
+{"language":"1","number":"19","text":"Source folder where the raw message file is"}
+{"language":"1","number":"20","text":"Could not load the configuration from: "}
 {"language":"1","number":"21","text":"language for strings, 1 = English"}
-{"language":"1","number":"22","text":"short label (slug) for myself e.g. `bernie`"}
-{"language":"1","number":"23","text":"could not copy the messages file to archive"}
-{"language":"1","number":"24","text":"could not find a group containing: "}
-{"language":"1","number":"25","text":"convert from date in format YYYY-MM-DD"}
-{"language":"1","number":"26","text":"the configuration folder path"}
+{"language":"1","number":"22","text":"Short label (slug) for myself e.g. `bernie`"}
+{"language":"1","number":"23","text":"Could not copy the messages file to archive"}
+{"language":"1","number":"24","text":"Could not find a group containing: "}
+{"language":"1","number":"25","text":"Convert from date in format YYYY-MM-DD"}
+{"language":"1","number":"26","text":"The configuration folder path"}
 {"language":"1","number":"27","text":"email address"}
 {"language":"1","number":"28","text":"password"}
 {"language":"1","number":"29","text":"IMAP server"}
 {"language":"1","number":"30","text":"email account"}
-{"language":"1","number":"31","text":"maximum number of messages to load"}
-
+{"language":"1","number":"31","text":"Maximum number of messages to load"}
+{"language":"1","number":"32","text":"No first name defined"}
+{"language":"1","number":"33","text":"Conversation ID not found"}
+{"language":"1","number":"34","text":"Full name not found"}

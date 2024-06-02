@@ -5,7 +5,6 @@ import os
 import re
 import time
 
-#import pathlib
 from pathlib import Path
 
 import person
