@@ -29,6 +29,7 @@ Argument | Alternate | Description
 `-e` | `--email` | email address to retrieve from
 `-p` | `--password` | email password
 `-x` | `--max` | The maximum number of messages to process
+`-a` | `--add` | Add people to the output even if not in `people.json` config file
 
  ## License
 

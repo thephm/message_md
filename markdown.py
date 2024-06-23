@@ -283,8 +283,7 @@ def format_markdown(the_message, the_config, people):
     # in turn, code can't get a source slug, so we skip the message
     if not first_name:
         if (the_config.debug):
-            print("No first name, from_slug='" + from_slug + "'")
-            print(the_message)
+            print("No first name where from_slug='" + from_slug + "'")
         return text
 
     # don't include first name if Note-to-Self since I know who I am!

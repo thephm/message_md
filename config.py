@@ -66,6 +66,7 @@ class _Config:
         self.SETTING_NOT_EMAIL_FOLDERS = "not-email-folders"
         self.SETTING_EMAIL_ACCOUNT = "email-account"
         self.SETTING_MAX_MESSAGES = "max-messages"
+        self.SETTING_CREATE_PEOPLE = "create-people"
 
         # within array of string fields (after loaded)
         self.STRINGS_LANGUAGE_INDEX = 0
@@ -114,6 +115,7 @@ class _Config:
         self.STR_NO_FIRST_NAME = 32
         self.STR_NO_CONVERSATION_ID = 33
         self.STR_FULL_NAME_NOT_FOUND = 34
+        self.STR_CREATE_PEOPLE = 35
 
         self.MAX_LEN_QUOTED_TEXT = 70
 
@@ -183,12 +185,14 @@ class _Config:
         self.imap_server = ""
         self.email_account = ""
         self.email_folders = ""
+        self.not_email_folders = ""
         self.password = ""
         self.max_messages = 10000
         self.phone_not_found = [] # array of phone numbers not found
         self.slugs_not_found = [] # array of slugs not found
         self.ids_not_found = [] # array of conversation IDs not found
         self.names_not_found = [] # Signal full name
+        self.create_people = False
 
     # -------------------------------------------------------------------------
     #
@@ -219,6 +223,7 @@ class _Config:
         output += self.SETTING_EMAIL_FOLDERS + ": " + str(self.email_folders) + "\n"
         output += self.SETTING_NOT_EMAIL_FOLDERS + ": " + str(self.not_email_folders) + "\n"
         output += self.SETTING_MAX_MESSAGES + ": " + str(self.max_messages) + "\n"
+        output += self.SETTING_CREATE_PEOPLE + ": " + str(self.create_people) + "\n"
         
         return output
 
@@ -234,7 +239,7 @@ class _Config:
 
         try:
             settings_filename = os.path.join(self.config_folder, self.settings_filename)
-            print("settings_filename=" + settings_filename)
+            print('settings_filename=' + settings_filename)
 
             try:
                 settings_file = open(settings_filename, 'r')
@@ -265,6 +270,7 @@ class _Config:
                 self.folder_per_person = bool(self.settings[self.SETTING_FOLDER_PER_PERSON])
                 self.file_per_person = bool(self.settings[self.SETTING_FILE_PER_PERSON])
                 self.file_per_day = bool(self.settings[self.SETTING_FILE_PER_DAY])
+                self.create_people = bool(self.settings[self.SETTING_CREATE_PEOPLE])
 
                 # this can be passed on the command line
                 try:
@@ -291,7 +297,7 @@ class _Config:
                 settings_file.close()
 
         except Exception as e:
-            print("Error loading settings.")
+            print('Error loading settings.')
             print(e)
             pass
 
@@ -358,6 +364,9 @@ class _Config:
         parser.add_argument("-x", "--max", dest="max_messages", default="",
                             help=self.STR_MAX_MESSAGES)
         
+        parser.add_argument("-a", "--add", action="store_true", dest="create_people", default="",
+                            help=self.STR_CREATE_PEOPLE)
+        
         args = parser.parse_args()
 
         return args
@@ -423,6 +432,9 @@ class _Config:
         if args.max_messages:
             self.max_messages = int(args.max_messages)
 
+        if args.create_people:
+            self.create_people = args.create_people
+
         if self.load_strings():
             if self.load_mime_types():
                 if self.load_people():
@@ -449,7 +461,7 @@ class _Config:
             elif not self.filename:
                 print('No messages file specified')
             elif not os.path.exists(self.filename):
-                print("The messages file '" + self.filename + "' could not be found")
+                print('The messages file "' + self.filename + '" could not be found')
             else:
                 init = True
         
@@ -484,7 +496,7 @@ class _Config:
                         pass
                 strings_file.close()
             else:
-                print("failed to open " + strings_filename)
+                print('failed to open ' + strings_filename)
         except Exception as e:
             print(e)
         
@@ -572,7 +584,7 @@ class _Config:
                 first_name = the_person.first_name
 
         if not first_name and self.debug and slug not in self.slugs_not_found:
-            print(self.get_str(self.STR_PERSON_NOT_FOUND) + slug)
+            print(self.get_str(self.STR_PERSON_NOT_FOUND) + " " + slug)
             self.slugs_not_found.append(slug)
 
         return first_name
@@ -705,7 +717,7 @@ class _Config:
                         self.set_me(the_person)
 
                 except Exception as e:
-                    print("Error loading person.")
+                    print('Error loading person.')
                     print(e)
                     pass
 
@@ -820,7 +832,10 @@ class _Config:
                     return the_person
 
         if name not in self.names_not_found:
-            print(self.get_str(self.STR_FULL_NAME_NOT_FOUND) + ": " + name)
+            # only tell the user that the person was found if `create_people`
+            # setting is False because the person will be created if it's True
+            if not self.create_people:
+                print(self.get_str(self.STR_FULL_NAME_NOT_FOUND) + ": " + name)
             self.names_not_found.append(name)
 
         return False
