@@ -98,6 +98,9 @@ def get_markdown(the_config, load_messages, messages, reactions):
             # add the reactions to the corresponding messages
             message.add_reactions(messages, reactions)
 
+            # sort them by their timestamp
+            messages = sorted(messages, key=lambda msg: msg.timestamp)
+
             # divy up messages to the groups and people they were with
             message.add_messages(messages, the_config)
 

@@ -150,9 +150,9 @@ def add_messages(messages, the_config):
 # 
 # Parameters:
 #
-#    message - the message to be added
-#    thing - the group or person the message is to be added to
-#    reversed - `True` if messages ordered from newest to oldest
+#  - message - the message to be added
+#  - thing - the group or person the message is to be added to
+#  - reversed - `True` if messages ordered from newest to oldest
 #
 # -----------------------------------------------------------------------------
 def add_message(the_message, thing, reversed=False):
