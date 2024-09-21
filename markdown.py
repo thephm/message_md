@@ -268,7 +268,7 @@ def format_markdown(the_message, the_config, people):
     text = ""
     first_name = ""
     from_slug = the_message.from_slug
-    
+
     if the_config.time_name_separate:
         text += NEW_LINE + the_message.time_str + NEW_LINE
 

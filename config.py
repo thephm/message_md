@@ -165,7 +165,6 @@ class _Config:
 
         self.settings_filename = "settings.json"
         self.service = ""
-        self.reversed = False
         self.filename = fileName
         self.language = self.ENGLISH
         self.media_subfolder = "media"
@@ -259,23 +258,26 @@ class _Config:
                 
                 if messages_filename:
                     self.filename = os.path.join(self.source_folder, messages_filename)
-                    self.attachments_subfolder = self.settings[self.SETTING_ATTACHMENTS_SUBFOLDER]
 
-                self.output_folder = self.settings[self.SETTING_OUTPUT_FOLDER]
-                self.groups_subfolder = self.settings[self.SETTING_GROUPS_SUBFOLDER]
-                self.media_subfolder = self.settings[self.SETTING_MEDIA_SUBFOLDER]
-                self.daily_notes_subfolder = self.settings[self.SETTING_DAILY_NOTES_SUBFOLDER]
-                self.image_embed = self.settings[self.SETTING_IMAGE_EMBED]
-                self.image_width = self.settings[self.SETTING_IMAGE_WIDTH]
-                self.include_timestamp = bool(self.settings[self.SETTING_INCLUDE_TIMESTAMP])
-                self.include_quote = bool(self.settings[self.SETTING_INCLUDE_QUOTE])
-                self.colon_after_context = bool(self.settings[self.SETTING_COLON_AFTER_CONTEXT])
-                self.time_name_separate = bool(self.settings[self.SETTING_TIME_NAME_SEPARATE])
-                self.include_reactions = bool(self.settings[self.SETTING_INCLUDE_REACTIONS])
-                self.folder_per_person = bool(self.settings[self.SETTING_FOLDER_PER_PERSON])
-                self.file_per_person = bool(self.settings[self.SETTING_FILE_PER_PERSON])
-                self.file_per_day = bool(self.settings[self.SETTING_FILE_PER_DAY])
-                self.create_people = bool(self.settings[self.SETTING_CREATE_PEOPLE])
+                    try:
+                        self.attachments_subfolder = self.settings[self.SETTING_ATTACHMENTS_SUBFOLDER]
+                        self.output_folder = self.settings[self.SETTING_OUTPUT_FOLDER]
+                        self.groups_subfolder = self.settings[self.SETTING_GROUPS_SUBFOLDER]
+                        self.media_subfolder = self.settings[self.SETTING_MEDIA_SUBFOLDER]
+                        self.daily_notes_subfolder = self.settings[self.SETTING_DAILY_NOTES_SUBFOLDER]
+                        self.image_embed = self.settings[self.SETTING_IMAGE_EMBED]
+                        self.image_width = self.settings[self.SETTING_IMAGE_WIDTH]
+                        self.include_timestamp = bool(self.settings[self.SETTING_INCLUDE_TIMESTAMP])
+                        self.include_quote = bool(self.settings[self.SETTING_INCLUDE_QUOTE])
+                        self.colon_after_context = bool(self.settings[self.SETTING_COLON_AFTER_CONTEXT])
+                        self.time_name_separate = bool(self.settings[self.SETTING_TIME_NAME_SEPARATE])
+                        self.include_reactions = bool(self.settings[self.SETTING_INCLUDE_REACTIONS])
+                        self.folder_per_person = bool(self.settings[self.SETTING_FOLDER_PER_PERSON])
+                        self.file_per_person = bool(self.settings[self.SETTING_FILE_PER_PERSON])
+                        self.file_per_day = bool(self.settings[self.SETTING_FILE_PER_DAY])
+                        self.create_people = bool(self.settings[self.SETTING_CREATE_PEOPLE])
+                    except:
+                        pass
 
                 # this can be passed on the command line
                 try:
@@ -382,16 +384,13 @@ class _Config:
     # were provided.
     #
     # -------------------------------------------------------------------------
-    def setup(self, service, reversed=False):
+    def setup(self, service):
 
         loaded = False
         init = False
 
         if len(service):
             self.service = service
-
-        if reversed:
-            self.reversed = True
 
         # load the command-line arguments
         args = self.get_arguments()
@@ -880,6 +879,10 @@ class _Config:
     #
     #   - False if no person found
     #   - Person object if found 
+    # 
+    # Notes:
+    # 
+    #   - @todo: if this is specific to Signal, should not be here
     #
     # -------------------------------------------------------------------------
     def get_person_by_conversation_id(self, id):

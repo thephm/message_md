@@ -123,19 +123,20 @@ def add_messages(messages, the_config):
         if the_message and len(the_message.group_slug):
             for group in the_config.groups:
                 if the_message.group_slug == group.slug:
-                    add_message(the_message, group, the_config.reversed)
+                    add_message(the_message, group)
                     the_message.processed = True
 
         if the_message and not the_message.processed:
                 
             if the_message.is_note_to_self():
-                add_message(the_message, the_config.me, the_config.reversed)
+                add_message(the_message, the_config.me)
                 the_message.processed = True
             else:
                 for person in the_config.people:
                     slug = person.slug
                     if slug != the_config.me.slug and (slug in the_message.to_slugs or slug == the_message.from_slug): 
-                        add_message(the_message, person, the_config.reversed)
+#                        add_message(the_message, person, the_config.reversed)
+                        add_message(the_message, person)
                         the_message.processed = True
                         break
 
@@ -152,10 +153,9 @@ def add_messages(messages, the_config):
 #
 #  - message - the message to be added
 #  - thing - the group or person the message is to be added to
-#  - reversed - `True` if messages ordered from newest to oldest
 #
 # -----------------------------------------------------------------------------
-def add_message(the_message, thing, reversed=False):
+def add_message(the_message, thing):
 
     date_found = False
 
@@ -164,20 +164,13 @@ def add_message(the_message, thing, reversed=False):
         for messages_on_date in thing.messages:
             if the_message.date_str == messages_on_date.date_str:
                 date_found = True
-                if reversed:
-                    messages_on_date.messages.insert(0, the_message)
-                else:
-                    messages_on_date.messages.append(the_message)
+                messages_on_date.messages.append(the_message)
 
         # if the date was not found, create it
         if date_found == False:
             new_date = DatedMessages()
             new_date.date_str = the_message.date_str
-
-            if reversed:
-                new_date.messages.insert(0, the_message)
-            else:
-                new_date.messages.append(the_message)
+            new_date.messages.append(the_message)
             thing.messages.append(new_date)
 
     except Exception as e:
