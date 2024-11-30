@@ -31,7 +31,6 @@ class Reaction:
 # - If `personSlug`` is non-blank, then `group_slug`` will be blank
 # 
 # -----------------------------------------------------------------------------
-
 class Message:
     def __init__(self):
         self.id = ""            # ID from the messaging system
@@ -135,7 +134,6 @@ def add_messages(messages, the_config):
                 for person in the_config.people:
                     slug = person.slug
                     if slug != the_config.me.slug and (slug in the_message.to_slugs or slug == the_message.from_slug): 
-#                        add_message(the_message, person, the_config.reversed)
                         add_message(the_message, person)
                         the_message.processed = True
                         break

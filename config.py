@@ -708,6 +708,7 @@ class _Config:
                         the_person.email_addresses = email_addresses.split(";")
                     except:
                         pass #not everyone needs one of these
+
                     try:
                         the_person.conversation_id = json_person[self.PERSON_FIELD_CONVERSATION_ID]
                     except:
@@ -831,8 +832,9 @@ class _Config:
     # -------------------------------------------------------------------------
     def get_person_by_full_name(self, name):
 
-        for the_person in self.people:
-            if the_person.full_name == name:
+        if name:
+            for the_person in self.people:
+                if the_person.full_name == name:
                     return the_person
 
         if name not in self.names_not_found:
