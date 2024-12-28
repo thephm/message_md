@@ -1,5 +1,5 @@
 # Functions to format message.Message objects into Markdown including 
-# rections and embedded ![[wikilinks]] to any attachments.
+# reactions and embedded ![[wikilinks]] to any attachments.
 
 import os
 import shutil
@@ -46,8 +46,7 @@ def setup_folders(the_config):
     try:
         Path(the_config.archive_subfolder).mkdir(parents=True, exist_ok=True)
     except Exception as e:
-        print(the_config.get_str(the_config.STR_COULD_CREATE_ARCHIVE_SUBFOLDER) + ": " + messages_file)
-        print(e)
+        print(the_config.get_str(the_config.STR_COULD_CREATE_ARCHIVE_SUBFOLDER) + ": " + messages_file + ". Error: " + str(e))
         return False
 
     now_str = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%m-%S')
@@ -101,7 +100,7 @@ def get_markdown(the_config, load_messages, messages, reactions):
             # sort them by their timestamp
             messages = sorted(messages, key=lambda msg: msg.timestamp)
 
-            # divy up messages to the groups and people they were with
+            # add messages to the corresponding groups and people
             message.add_messages(messages, the_config)
 
             # for email service, the attachments are put in the right folder 

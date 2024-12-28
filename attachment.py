@@ -19,20 +19,21 @@ class Attachment:
         self.voice_note = False
 
     def __str__(self):
-        output = "id: " + self.id + NEW_LINE
-        output += "type: " + self.type + NEW_LINE
+        output = "id: " + str(self.id) + NEW_LINE
+        output += "type: " + str(self.type) + NEW_LINE
         output += "size: " + str(self.size) + NEW_LINE
-        output += "filename: " + self.filename + NEW_LINE
-        output += "custom_filename: " + self.custom_filename + NEW_LINE
+        output += "filename: " + str(self.filename) + NEW_LINE
+        output += "custom_filename: " + str(self.custom_filename) + NEW_LINE
         output += "width: " + str(self.width) + NEW_LINE
         output += "height: " + str(self.height) + NEW_LINE
         output += "voice_note: " + str(self.voice_note)
         return output
     
     def is_image(self):
+
         is_image = False
 
-        if self.type[:5] == "image":
+        if self.type and self.type[:5] == "image":
             is_image = True
 
         return is_image

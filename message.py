@@ -119,24 +119,22 @@ class DatedMessages:
 def add_messages(messages, the_config):
 
     for the_message in messages:
-        if the_message and len(the_message.group_slug):
+        if bool(the_message.group_slug):
             for group in the_config.groups:
                 if the_message.group_slug == group.slug:
                     add_message(the_message, group)
                     the_message.processed = True
 
-        if the_message and not the_message.processed:
-                
-            if the_message.is_note_to_self():
-                add_message(the_message, the_config.me)
-                the_message.processed = True
-            else:
-                for person in the_config.people:
-                    slug = person.slug
-                    if slug != the_config.me.slug and (slug in the_message.to_slugs or slug == the_message.from_slug): 
-                        add_message(the_message, person)
-                        the_message.processed = True
-                        break
+        if not the_message.processed:
+            from_slug = the_message.from_slug
+            me_slug = the_config.me.slug
+            to_slugs = the_message.to_slugs
+            
+            for person in the_config.people:
+                this_slug = person.slug
+                if (from_slug == me_slug and this_slug in to_slugs) or (from_slug != me_slug and this_slug == from_slug):
+                    add_message(the_message, person)
+                    the_message.processed = True
 
     return
 
@@ -156,13 +154,12 @@ def add_messages(messages, the_config):
 def add_message(the_message, thing):
 
     date_found = False
-
     try:
         # go through existing dates and add the message there
         for messages_on_date in thing.messages:
             if the_message.date_str == messages_on_date.date_str:
                 date_found = True
-                messages_on_date.messages.append(the_message)
+                thing.messages_on_date.messages.append(the_message)
 
         # if the date was not found, create it
         if date_found == False:
@@ -172,7 +169,7 @@ def add_message(the_message, thing):
             thing.messages.append(new_date)
 
     except Exception as e:
-        print(e)
+        pass
 
 # -----------------------------------------------------------------------------
 #

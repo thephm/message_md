@@ -516,18 +516,25 @@ class _Config:
     #
     # -------------------------------------------------------------------------
     def get_mime_type(self, filename):
-
-        mime_types = self.mime_types
-
-        # get the suffix
-        parts = filename.split('.')
-        suffix = parts[parts.length - 1]
-    
-        # find the type
-        for mime_type, ext in mime_types.items():
-            if ext == suffix:
-                return mime_type
+        try:
+            # ensure the MIME types are loaded
+            if not self.mime_types:
+                raise ValueError("MIME types are not loaded.")
             
+            # extract the file extension (case-insensitive)
+            suffix = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+            
+            # directly find the MIME type in the reverse mapping
+            for mime_type, ext in self.mime_types.items():
+                if ext.lower() == suffix:
+                    return mime_type
+
+        except ValueError as e:
+            print(f"Error: {e}")
+        except Exception as e:
+            print(f"Unexpected error determining MIME type: {e}")
+
+        # default to None if no match is found
         return None
         
     # -------------------------------------------------------------------------
@@ -537,15 +544,28 @@ class _Config:
     # -------------------------------------------------------------------------
     def load_mime_types(self):
 
-        self.mime_types = False
-
+        self.mime_types = None
+        
         try:
+            # build the path to the MIME types file
             mime_types_filename = os.path.join(RESOURCES_FOLDER, MIME_TYPES_FILE_NAME)
-            mime_types_file = open(mime_types_filename, 'r')
-            self.mime_types = json.load(mime_types_file)
-        except:
-            print(self.get_str(self.STR_COULD_NOT_LOAD_MIME_TYPES))
+            
+            # use a context manager to handle the file
+            with open(mime_types_filename, 'r') as mime_types_file:
+                self.mime_types = json.load(mime_types_file)
+        
+        except FileNotFoundError:
+            print(f"Error: MIME types file not found at {mime_types_filename}")
+        
+        except json.JSONDecodeError as e:
+            print(f"Error: Failed to parse MIME types file: {e}")
 
+        except Exception as e:
+            print(f"Error: An unexpected error occurred: {e}")
+
+        if self.mime_types is None:
+            print(self.get_str(self.STR_COULD_NOT_LOAD_MIME_TYPES))
+        
         return self.mime_types
     
     # -------------------------------------------------------------------------
@@ -666,7 +686,7 @@ class _Config:
 
     # -------------------------------------------------------------------------
     #
-    # Load the people and return the number of people loaded forom the 
+    # Load the people and return the number of people loaded from the 
     # `people.json` config file.
     #
     # -------------------------------------------------------------------------
@@ -704,10 +724,10 @@ class _Config:
                     
                     the_person.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
                     try:
-                        email_addresses = json_person[self.PERSON_FIELD_EMAIL]
+                        email_addresses = json_person[self.PERSON_FIELD_EMAIL].lower()
                         the_person.email_addresses = email_addresses.split(";")
                     except:
-                        pass #not everyone needs one of these
+                        pass #not everyone needs one of thesex
 
                     try:
                         the_person.conversation_id = json_person[self.PERSON_FIELD_CONVERSATION_ID]
@@ -718,6 +738,7 @@ class _Config:
                     self.people.append(the_person)
 
                     # see if it's me and save me!
+                    # @todo: don't think me should be a separate object in config, just the slug
                     if the_person.slug == self.me.slug:
                         self.set_me(the_person)
 

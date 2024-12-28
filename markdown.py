@@ -138,10 +138,13 @@ def create_markdown_file(entity, folder, the_config):
             
             if output_file:
                 # add the front matter if this is a new file
-                if exists == False and (not the_message.is_note_to_self() or the_message.group_slug):
+#                if exists == False and (not the_message.is_note_to_self() or the_message.group_slug):
+#                    frontmatter = get_frontmatter(the_message, the_config)
+#                    output_file.write(frontmatter)
+                if exists == False:
                     frontmatter = get_frontmatter(the_message, the_config)
                     output_file.write(frontmatter)
-         
+
                 # don't add to the file if it's previously created
                 # UNLESS it's a note-to-self
                 age = time.time() - os.path.getctime(filename)
@@ -150,7 +153,6 @@ def create_markdown_file(entity, folder, the_config):
                         output_file.write(format_markdown(the_message, the_config, entity))
                         output_file.close()
                     except Exception as e:
-                        print(e)
                         pass
 
 # -----------------------------------------------------------------------------
@@ -172,7 +174,6 @@ def open_output_file(filename, the_config):
 
     except Exception as e:
         print(the_config.get_str(the_config.STR_ERROR) + " " + the_config.get_str(the_config.STR_COULD_NOT_OPEN_FILE) + " " + str(e))
-        print(e)
 
     return output_file
 
@@ -191,6 +192,9 @@ def open_output_file(filename, the_config):
 #
 # -----------------------------------------------------------------------------
 def get_frontmatter(the_message, the_config):
+
+    # remove duplicate slugs and preserve the order
+    the_message.to_slugs = list(dict.fromkeys(the_message.to_slugs))
 
     frontmatter = YAML_DASHES 
 
@@ -212,7 +216,7 @@ def get_frontmatter(the_message, the_config):
     if not len(the_message.group_slug):
         frontmatter += the_message.from_slug
 
-        if len(the_message.to_slugs) and the_message.is_note_to_self() == False:
+        if len(the_message.to_slugs) and not the_message.is_note_to_self():
             frontmatter += ", " + ", ".join(the_message.to_slugs)
     
     elif len(the_message.group_slug):
@@ -303,6 +307,7 @@ def format_markdown(the_message, the_config, people):
         text += NEW_LINE
 
     for the_attachment in the_message.attachments:
+        text += NEW_LINE
         link = the_attachment.generate_link(the_config)
         text += link
 
