@@ -111,8 +111,9 @@ def get_markdown(the_config, load_messages, messages, reactions):
 
             # generate the Markdown for each person
             for the_person in the_config.people:
-                folder = os.path.join(the_config.people_folder, the_person.slug)
-                markdown.create_markdown_file(the_person, folder, the_config)
+                if not the_person.ignore:
+                    folder = os.path.join(the_config.people_folder, the_person.slug)
+                    markdown.create_markdown_file(the_person, folder, the_config)
 
             # generate the Markdown for each group
             for the_group in the_config.groups:

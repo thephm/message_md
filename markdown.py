@@ -137,10 +137,6 @@ def create_markdown_file(entity, folder, the_config):
             output_file = open_output_file(filename, the_config)
             
             if output_file:
-                # add the front matter if this is a new file
-#                if exists == False and (not the_message.is_note_to_self() or the_message.group_slug):
-#                    frontmatter = get_frontmatter(the_message, the_config)
-#                    output_file.write(frontmatter)
                 if exists == False:
                     frontmatter = get_frontmatter(the_message, the_config)
                     output_file.write(frontmatter)

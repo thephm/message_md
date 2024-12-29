@@ -17,6 +17,7 @@ Add each of the people you communicate with into `config\people.json` file with 
 - `slug` - one-word or hyphenated-words uniquely identifying this person
 - `first-name` - the person's first name
 - `last-name` - the person's last name
+- `ignore` - optional and `False` to include or `True` to exclude from the output
 - `mobile` - the phone number field in the `signald` output file
 - `linkedin-id` - the last part of their LinkedIn profile URL
 - `conversation-id` - required for [signal_sqlite_md](https://github.com/thephm/signal_sqlite_md/tree/main)
@@ -24,8 +25,23 @@ Add each of the people you communicate with into `config\people.json` file with 
 ### Example
 
 ```
-{"slug":"spongebob","first-name":"SpongeBob", "last-name":"SquarePants", "mobile":"+14165551212", "linkedin-id":"spbob", "conversation-id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"}
-{"slug":"mr-krabs","first-name":"Eugene", "first-name":"Krabs", "mobile":"+12895551313", "linkedin-id":"mrkrab", "conversation-id":"d84d84b4-41b8-4044-93a6-2b47cd347e25"}
+[
+{
+    "slug":"spongebob",
+    "first-name":"SpongeBob",
+    "last-name":"SquarePants", 
+    "mobile":"+14165551212", 
+    "linkedin-id":"spbob", 
+    "conversation-id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"
+}
+{
+    "slug":"mr-krabs",
+    "first-name":"Eugene", 
+    "first-name":"Krabs",
+    "ignore": "True", 
+    "mobile":"+12895551313", 
+    "linkedin-id":"mrkrab", "conversation-id":"d84d84b4-41b8-4044-93a6-2b47cd347e25"}
+]
 ```
 
 ## Groups

@@ -1,5 +1,27 @@
 [
-    {"slug":"spongebob", "first-name":"SpongeBob", "last-name":"SquarePants", "mobile":"+14165551212", "email": "spongebob@gmail.com;spbob@yahoo.com", "linkedin-id":"spbob"},
-    {"slug":"mr-krabs", "first-name":"Eugene", "last-name":"Krabs", "mobile":"+12895551313", "email": "mrkrab@krustykrab.com", "linkedin-id":"mrkrab"},
-    {"slug":"patrick-star", "first-name":"Patrick", "last-name":"tbd", "mobile":"+19055551414", "email": "patrick@star.com", "linkedin-id": "prick"}
+{
+    "slug":"spongebob", 
+    "first-name":"SpongeBob", 
+    "last-name":"SquarePants", 
+    "mobile":"+14165551212", 
+    "email": "spongebob@gmail.com;spbob@yahoo.com", 
+    "linkedin-id":"spbob"
+},
+{
+    "slug":"mr-krabs", 
+    "first-name":"Eugene", 
+    "last-name":"Krabs", 
+    "mobile":"+12895551313", 
+    "email": "mrkrab@krustykrab.com", 
+    "linkedin-id":"mrkrab"
+},
+{
+    "slug":"patrick-star",
+    "first-name":"Patrick", 
+    "last-name":"Fish",
+    "ignore": "True", 
+    "mobile":"+19055551414", 
+    "email": "patrick@star.com", 
+    "linkedin-id": "prick"
+}
 ]

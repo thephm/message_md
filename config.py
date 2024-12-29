@@ -128,6 +128,7 @@ class _Config:
         self.PERSON_FIELD_SLUG = "slug"
         self.PERSON_FIELD_FIRST_NAME = "first-name"
         self.PERSON_FIELD_LAST_NAME = "last-name"
+        self.PERSON_FIELD_IGNORE = "ignore"
         self.PERSON_FIELD_FULL_NAME = "profile-full-name"
         self.PERSON_FIELD_MOBILE = "mobile"
         self.PERSON_FIELD_EMAIL = "email"
@@ -709,20 +710,30 @@ class _Config:
             for json_person in json_people:
                 try:
                     the_person = person.Person()
+
+                    # the person must have a slug
                     the_person.slug = json_person[self.PERSON_FIELD_SLUG]
-                    the_person.first_name = json_person[self.PERSON_FIELD_FIRST_NAME]
-                    the_person.last_name = json_person[self.PERSON_FIELD_LAST_NAME]
+                    
+                    # the person can optionally have these fields
                     try:
+                        the_person.first_name = json_person[self.PERSON_FIELD_FIRST_NAME]
                         the_person.full_name = json_person[self.PERSON_FIELD_FULL_NAME]
+                        the_person.last_name = json_person[self.PERSON_FIELD_LAST_NAME]
                     except:
                         pass
-                    
+
+                    try:
+                        if json_person[self.PERSON_FIELD_IGNORE] == "True":
+                            the_person.ignore = True
+                        the_person.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
+                    except:
+                        pass
+
                     mobile = json_person[self.PERSON_FIELD_MOBILE]
                     if mobile:
                         mobile = mobile.replace('+', '').replace('-', '')
                         the_person.mobile = mobile
                     
-                    the_person.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
                     try:
                         email_addresses = json_person[self.PERSON_FIELD_EMAIL].lower()
                         the_person.email_addresses = email_addresses.split(";")
@@ -743,7 +754,7 @@ class _Config:
                         self.set_me(the_person)
 
                 except Exception as e:
-                    print('Error loading person.')
+                    print('Error loading person: ' + the_person.slug)
                     print(e)
                     pass
 
@@ -778,8 +789,7 @@ class _Config:
                     except:
                         pass
                     try:
-                        for person_slug in json_group[self.GROUP_FIELD_PEOPLE]:
-                            the_group.members.append(person_slug)
+                        the_group.members = [person_slug for person_slug in json_group[self.GROUP_FIELD_PEOPLE]]
                         self.groups.append(the_group)
                     except:
                         pass
