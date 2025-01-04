@@ -1,6 +1,7 @@
 import os
 import shutil
 import markdown
+import logging
 
 # constants
 NEW_LINE = "\n"
@@ -47,8 +48,8 @@ class Attachment:
                 filename += "." + suffix
 
         except Exception as e:
-            print(the_config.get_str(the_config.STR_UNKNOWN_MIME_TYPE) + ": '" + self.type + "' (" + self.id + ')')
-            print(e)
+            logging.error(f"{the_config.get_str(the_config.STR_UNKNOWN_MIME_TYPE)}: {self.type} ({self.id})")
+            logging.error(e)
             pass
 
         return filename
@@ -115,15 +116,17 @@ def move_attachments(entities, folder, the_config):
                         else:
                             dest_file = os.path.join(dest_folder, the_attachment.id)
 
-#                        if the_config.debug:
-#                            print(source_file + ' -> ' + dest_file)
+                        if the_config.debug:
+                            logging.info(f"{source_file} -> {dest_file}")
                         
                         if os.path.exists(source_file) and not os.path.exists(dest_file):
+                            if os.path.isdir(source_file):
+                                    raise IsADirectoryError(f"Source file is a directory: {source_file}")
                             try: 
                                 if the_config.debug:
                                     shutil.copy(source_file, dest_file)
                                 else:
                                     shutil.move(source_file, dest_file)
                             except Exception as e:
-                                print(the_config.get_str(the_config.STR_COULD_NOT_MOVE_THE_ATTACHMENT) + ": " + source_file + " -> " + dest_file)
-                                print(e)
+                                logging.error(f"{the_config.get_str(the_config.STR_COULD_NOT_MOVE_THE_ATTACHMENT)}: {source_file} -> {dest_file}")
+                                logging.error(e)

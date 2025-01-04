@@ -4,6 +4,7 @@
 import os
 import re
 import time
+import logging
 
 from pathlib import Path
 
@@ -69,7 +70,7 @@ def create_thing_folder(thing, the_config):
         try:
             created = create_folder(thing_folder)
         except Exception as e:
-            print(e)
+            logging.error(f"create_thing_folder Exception '{e}'. Folder: '{thing_folder}'")
 
     return created
 
@@ -83,7 +84,7 @@ def create_folder(folder):
             Path(folder).mkdir(parents=True, exist_ok=True)
             result = True
         except Exception as e:
-            print(e)
+            logging.error(f"create_folder Exception '{e}'. Folder: '{folder}'")
     else:
         # already existed so lie that it was created
         result = True
@@ -114,7 +115,7 @@ def create_markdown_file(entity, folder, the_config):
 
         for the_message in dated_messages.messages:
 
-            if the_config.from_date and (the_message.date_str < the_config.from_date):
+            if the_config.from_date and (the_message.date_str[:10] < the_config.from_date):
                 continue
 
             # convert to Markdown and if no message, move on to the next one
@@ -144,6 +145,7 @@ def create_markdown_file(entity, folder, the_config):
                 # don't add to the file if it's previously created
                 # UNLESS it's a note-to-self
                 age = time.time() - os.path.getctime(filename)
+                
                 if age < WELL_AGED or the_message.is_note_to_self():
                     try:
                         output_file.write(format_markdown(the_message, the_config, entity))
@@ -169,7 +171,7 @@ def open_output_file(filename, the_config):
         output_file = open(filename, 'a', encoding="utf-8")
 
     except Exception as e:
-        print(the_config.get_str(the_config.STR_ERROR) + " " + the_config.get_str(the_config.STR_COULD_NOT_OPEN_FILE) + " " + str(e))
+        logging.error(f"{the_config.get_str(the_config.STR_ERROR)}. Exception '{e}'")
 
     return output_file
 
@@ -238,7 +240,7 @@ def get_frontmatter(the_message, the_config):
     else: 
         time_str = the_message.time_str
 
-    frontmatter += YAML_DATE + ": " + date_str + NEW_LINE
+    frontmatter += YAML_DATE + ": " + date_str[:10] + NEW_LINE
     frontmatter += YAML_TIME + ": " + time_str + NEW_LINE
     subject = the_message.subject
 
@@ -254,7 +256,7 @@ def get_frontmatter(the_message, the_config):
 
 # -----------------------------------------------------------------------------
 #
-# Format a Message object in Markdown
+# Format a Message object in Markdown.
 #
 # Parameters:
 #
@@ -284,7 +286,7 @@ def format_markdown(the_message, the_config, people):
     if not first_name:
         if (the_config.debug):
             error_str = the_config.get_str(the_config.STR_NO_FIRST_NAME_FOR_SLUG)
-            print(error_str + "'" + from_slug + "'")
+            logging.error(f"{error_str} '{from_slug}'")
         return text
 
     # don't include first name if Note-to-Self since I know who I am!
@@ -331,10 +333,11 @@ def format_markdown(the_message, the_config, people):
     except:
         pass
 
+    # quote all lines in the body
     if len(the_message.body):
-        if the_config.service != YAML_SERVICE_EMAIL:
-            text += MD_QUOTE
-        text += the_message.body + NEW_LINE
+        body_lines = the_message.body.split('\n')
+        quoted_body = '\n'.join([MD_QUOTE + line for line in body_lines])
+        text += quoted_body + NEW_LINE
 
     if the_config.include_reactions and len(the_message.reactions):
         text += MD_QUOTE + NEW_LINE + MD_QUOTE

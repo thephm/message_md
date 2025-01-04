@@ -3,6 +3,7 @@
 
 import os
 import shutil
+import logging
 
 import pathlib
 from pathlib import Path
@@ -46,7 +47,7 @@ def setup_folders(the_config):
     try:
         Path(the_config.archive_subfolder).mkdir(parents=True, exist_ok=True)
     except Exception as e:
-        print(the_config.get_str(the_config.STR_COULD_CREATE_ARCHIVE_SUBFOLDER) + ": " + messages_file + ". Error: " + str(e))
+        logging.error(the_config.get_str(the_config.STR_COULD_CREATE_ARCHIVE_SUBFOLDER) + ": " + messages_file + ". Error: " + str(e))
         return False
 
     now_str = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%m-%S')
@@ -60,10 +61,9 @@ def setup_folders(the_config):
 
     except Exception as e:
         if the_config.debug:
-            print(the_config.get_str(the_config.STR_COULD_NOT_MOVE_MESSAGES_FILE) + ": " + messages_file)
+            logging.error(f"{the_config.get_str(the_config.STR_COULD_NOT_MOVE_MESSAGES_FILE)}: {messages_file} -> {dest_file}. Error: {e}")
         else:
-            print(the_config.get_str(the_config.STR_COULD_NOT_COPY_MESSAGES_FILE) + ": " + messages_file)
-            print(e)
+            logging.error(f"{the_config.get_str(the_config.STR_COULD_NOT_COPY_MESSAGES_FILE)}: {messages_file} -> {dest_file}. Error: {e}")
         pass
 
     return dest_file

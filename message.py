@@ -53,25 +53,28 @@ class Message:
         self.service = ""       # mesaging service e.g. YAML_SERVICE_SIGNAL
 
     def __str__(self):
-        output = "id: " + self.id + NEW_LINE
+        output = "id: " + str(self.id) + NEW_LINE
         output += "timestamp: " + str(self.timestamp) + NEW_LINE
-        output += "date_str: " + self.date_str + NEW_LINE
-        output += "time_str: " + self.time_str + NEW_LINE
-        output += "from_slug: " + self.from_slug + NEW_LINE
+        output += "date_str: " + str(self.date_str) + NEW_LINE
+        output += "time_str: " + str(self.time_str) + NEW_LINE
+        output += "from_slug: " + str(self.from_slug) + NEW_LINE
         output += "to_slugs: " + str(self.to_slugs) + NEW_LINE
         output += "group_slug: " + self.group_slug + NEW_LINE
         output += "phone_number: " + str(self.phone_number) + NEW_LINE
         output += "processed: " + str(self.processed) + NEW_LINE
         output += "attachments: " + str(len(self.attachments)) + NEW_LINE
         output += "reactions: " + str(len(self.reactions)) + NEW_LINE
-        output += "subject: " + self.subject + NEW_LINE
-        output += "body: " + self.body
+        output += "subject: " + str(self.subject) + NEW_LINE
+        output += "body: " + str(self.body)
         return output
 
     # checks if this is a message sent to myself i.e. "Note to Self" feature
     def is_note_to_self(self):
         result = False
-        if (self.from_slug in self.to_slugs) and not self.group_slug:
+        # groups are only used in chats so if this was an email to multiple
+        # people, then it's not a note-to-self. So check that I'm the only
+        # person in `self.to_slugs` and that `self.group_slug` is empty
+        if {self.from_slug} == set(self.to_slugs) and not self.group_slug:
             result = True
         return result
     
@@ -89,7 +92,7 @@ class Message:
         return result
     
     def get_date_str(self):
-        return time.strftime("%Y-%m-%d", self.date_str)
+        return time.strftime("%Y-%m-%d", self.date_str[:10])
         
     def get_time_str(self):
         return time.strftime("%H:%M", self.time_str)
@@ -105,6 +108,29 @@ class DatedMessages:
     def __init__(self):
         self.date_str = ""
         self.messages = []
+
+# -----------------------------------------------------------------------------
+#
+# Check if the date "YYYY-MM-DD" is in any DatedMessages.date_str.
+#
+# Parameters:
+#  
+#   - date_str - the date string to check in the format "YYYY-MM-DD"
+#   - dated_messages_list - a list of DatedMessages objects
+#
+# Returns:
+#  
+#   - True if the date is found in any DatedMessages.date_str
+#   - False otherwise
+#
+# -----------------------------------------------------------------------------
+def date_exists(date_str, dated_messages_list):
+
+    for dated_message in dated_messages_list:
+        if dated_message.date_str.startswith(date_str):
+            return True
+        
+    return False
 
 # -----------------------------------------------------------------------------
 #
@@ -129,14 +155,63 @@ def add_messages(messages, the_config):
             from_slug = the_message.from_slug
             me_slug = the_config.me.slug
             to_slugs = the_message.to_slugs
-            
+                                   
             for person in the_config.people:
-                this_slug = person.slug
-                if (from_slug == me_slug and this_slug in to_slugs) or (from_slug != me_slug and this_slug == from_slug):
+                # if from me and to me (and possibly others) OR from someone else to anyone
+                if (from_slug == me_slug and person.slug in to_slugs) or (from_slug != me_slug and person.slug == from_slug):
                     add_message(the_message, person)
                     the_message.processed = True
 
-    return
+# -----------------------------------------------------------------------------
+#
+# Check if the messages are between the same people
+#
+# Parameters:
+# 
+#   - message_one - the first message
+#   - message_two - the second message
+# 
+# Returns:
+#
+#   - True if the messages are between the same people
+#   - False if the messages are not between the same people 
+# 
+# -----------------------------------------------------------------------------
+def same_people(message_one, message_two):
+
+    if "Hey! I just got booked for a 3pm" in message_two.body and "Hey Mike, A pleasure to make your acquaintance" in message_one.body:
+        print("HERE1") # this happens
+        here1 = True
+        
+    if "Hey! I just got booked for a 3pm" in message_one.body and "Hey Mike, A pleasure to make your acquaintance" in message_two.body:
+        print("HERE2") # this doesn't happen
+        here2 = True
+
+    if not message_one or not message_two:
+        return False
+  
+    # ensure `date_str` is not None
+    if not message_one.date_str or not message_two.date_str:
+        return False
+    
+    # check if the messages are between the same people
+    if message_one.from_slug == message_two.from_slug and set(message_one.to_slugs) == set(message_two.to_slugs):
+        return True
+    
+    if (message_one.from_slug in message_two.to_slugs) and (message_two.from_slug in message_one.to_slugs):
+        # remove the from_slug from each set of to_slugs and compare the remaining sets
+        adjusted_to_slugs_one = set(message_one.to_slugs) - {message_two.from_slug}
+        adjusted_to_slugs_two = set(message_two.to_slugs) - {message_one.from_slug}
+        if adjusted_to_slugs_one == adjusted_to_slugs_two:
+            return True
+
+    if "Hey! I just got booked for a 3pm" in message_two.body and "Hey Mike, A pleasure to make your acquaintance" in message_one.body:
+        print("HERE1 too") # this happens
+
+    if "Hey! I just got booked for a 3pm" in message_one.body and "Hey Mike, A pleasure to make your acquaintance" in message_two.body:
+        print("HERE2 too") # this doesn't happen
+
+    return False
 
 # -----------------------------------------------------------------------------
 #
@@ -149,27 +224,72 @@ def add_messages(messages, the_config):
 #
 #  - message - the message to be added
 #  - thing - the group or person the message is to be added to
+#  - the_config - the configuration, an instance of Config
 #
 # -----------------------------------------------------------------------------
 def add_message(the_message, thing):
 
-    date_found = False
-    try:
-        # go through existing dates and add the message there
-        for messages_on_date in thing.messages:
-            if the_message.date_str == messages_on_date.date_str:
-                date_found = True
-                thing.messages_on_date.messages.append(the_message)
+    date_exists = False
 
-        # if the date was not found, create it
-        if date_found == False:
-            new_date = DatedMessages()
-            new_date.date_str = the_message.date_str
-            new_date.messages.append(the_message)
-            thing.messages.append(new_date)
+    if "Hey Mike, A pleasure to make your acquaintance" in the_message.body:
+        print("\nHere Mom!\n")
+
+    try:
+        # go through existing dates to see if messages are already there
+        for messages_on_date in thing.messages:
+            
+            # see if the date already exists and keep track of this for later
+            if messages_on_date.date_str[:10] == the_message.date_str[:10]:
+                date_exists = True
+                   
+                # go through the messages on the date
+                for a_message in messages_on_date.messages:
+
+                    if "Hey Mike, A pleasure to make your acquaintance" in a_message.body:
+                        print("\nHere three Mom!\n")
+                    if "Hey! I just got booked for a 3pm" in a_message.body and "Hey Mike, A pleasure to make your acquaintance" in the_message.body:
+                        print("case 1: \n\t a_message.body = " + a_message.body[0:20] + "\n\t the_message.body=" + the_message.body[0:20]) # this happens
+                    if "Hey! I just got booked for a 3pm" in a_message.body:
+                        print("case 1a: \n\t a_message.body = " + a_message.body[0:20] + "\n\t the_message.body=" + the_message.body[0:20]) # this happens
+                    
+                    # see if the message is between the same people
+                    if same_people(the_message, a_message):
+                        if "Hey! I just got booked for a 3pm" in a_message.body:
+                            print("case 1a: SAME people\n\t a_message.body = " + a_message.body[0:20] + "\n\t the_message.body=" + the_message.body[0:20]) # this happens
+                        # add the message to that date and we're done
+                        messages_on_date.messages.append(the_message)
+                        return
+                    elif "Hey! I just got booked for a 3pm" in a_message.body:
+                        print("case 1a: NOT same people\n\t a_message.body = " + a_message.body[0:20] + "\n\t the_message.body=" + the_message.body[0:20]) # this happens
+
+        # date already exists and this is a different conversation, i.e. between
+        # different people, so append " - 1" to the date string so that this 
+        # message is not mixed in with the other message(s) on the same date
+        if date_exists:
+            try:
+                suffix = 1
+                base_date_str = the_message.date_str[:10]
+                new_date_str = f"{base_date_str} - {suffix}"
+                while any(dm.date_str == new_date_str for dm in thing.messages):
+                    suffix += 1
+                    new_date_str = f"{base_date_str} - {suffix}"
+                the_message.date_str = new_date_str
+            except Exception as e:
+                print(e)
+
+        if "Hey Mike, A pleasure to make your acquaintance" in the_message.body:
+            print("\ncase 1: date_str=" + the_message.date_str + "\n\t the_message.body=" + the_message.body[0:20] + "\n")
+        elif "Hey! I just got booked for a 3pm" in the_message.body:
+            print("\ncase 2: date_str=" + the_message.date_str + "\n\t the_message.body=" + the_message.body[0:20] + "\n") # this happens with "2024-12-20" TWICE
+
+        # and add the message to the a new DatedMessages object
+        new_date = DatedMessages()
+        new_date.messages.append(the_message)
+        new_date.date_str = the_message.date_str
+        thing.messages.append(new_date)
 
     except Exception as e:
-        pass
+        print("Error in add_message: " + e)
 
 # -----------------------------------------------------------------------------
 #
