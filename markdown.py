@@ -36,6 +36,8 @@ TAG_EMAIL = "email"
 YAML_SUBJECT = "subject"
 YAML_MESSAGE_ID = "message-id"
 
+errored_people = []
+
 # -----------------------------------------------------------------------------
 #
 # Create a folder for a specific person or group's messages.
@@ -284,8 +286,9 @@ def format_markdown(the_message, the_config, people):
     # I've seen cases with SMS Backup where `from_address="null"` and,
     # in turn, code can't get a source slug, so we skip the message
     if not first_name:
-        if (the_config.debug):
+        if the_config.debug and from_slug not in errored_people:
             error_str = the_config.get_str(the_config.STR_NO_FIRST_NAME_FOR_SLUG)
+            errored_people.append(from_slug)
             logging.error(f"{error_str} '{from_slug}'")
         return text
 
