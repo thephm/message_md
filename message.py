@@ -5,6 +5,7 @@
 # -----------------------------------------------------------------------------
 
 import time
+import logging
 
 NEW_LINE = "\n"
 
@@ -190,13 +191,17 @@ def same_people(message_one, message_two):
     if message_one.from_slug == message_two.from_slug and set(message_one.to_slugs) == set(message_two.to_slugs):
         return True
     
+    # check if the messages are within the same group e.g. in SMS or Signal
+    if message_one.group_slug == message_two.group_slug: 
+        return True
+    
     if (message_one.from_slug in message_two.to_slugs) and (message_two.from_slug in message_one.to_slugs):
         # remove the from_slug from each set of to_slugs and compare the remaining sets
         adjusted_to_slugs_one = set(message_one.to_slugs) - {message_two.from_slug}
         adjusted_to_slugs_two = set(message_two.to_slugs) - {message_one.from_slug}
         if adjusted_to_slugs_one == adjusted_to_slugs_two:
             return True
-
+    
     return False
 
 # -----------------------------------------------------------------------------
@@ -247,7 +252,7 @@ def add_message(the_message, thing):
                     new_date_str = f"{base_date_str} - {suffix}"
                 the_message.date_str = new_date_str
             except Exception as e:
-                print(e)
+                logging.error(f"Error in add_message(): {e}")
 
         # and add the message to the a new DatedMessages object
         new_date = DatedMessages()
@@ -256,7 +261,7 @@ def add_message(the_message, thing):
         thing.messages.append(new_date)
 
     except Exception as e:
-        print("Error in add_message: " + e)
+        logging.error(f"Error in add_message(): {e}")
 
 # -----------------------------------------------------------------------------
 #
