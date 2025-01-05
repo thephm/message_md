@@ -2,6 +2,7 @@ import json
 import os
     
 import markdown
+import logging
 
 import person
 import group
@@ -128,6 +129,7 @@ class _Config:
         self.STR_COULD_NOT_CREATE_MEDIA_FOLDER = 45
         self.STR_DATE_STRING_DOES_NOT_MATCH_FORMAT = 46
         self.STR_THESE_EMAIL_ADDRESSES_NOT_FOUND = 47
+        self.STR_OR_WITH_FULL_NAME = 48
 
         self.MAX_LEN_QUOTED_TEXT = 70
 
@@ -251,12 +253,12 @@ class _Config:
 
         try:
             settings_filename = os.path.join(self.config_folder, self.settings_filename)
-            print('settings_filename=' + settings_filename)
+            logging.info("settings_filename='{settings_filename}'")
 
             try:
                 settings_file = open(settings_filename, 'r')
             except Exception as e:
-                print(e)
+                logging(f"open(settings_filename) Error: {e}")
 
             if settings_file:
 
@@ -312,8 +314,7 @@ class _Config:
                 settings_file.close()
 
         except Exception as e:
-            print('Error loading settings.')
-            print(e)
+            logging(f"Error loading settings: {e}")
             pass
 
         return result
@@ -724,10 +725,26 @@ class _Config:
                     # the person can optionally have these fields
                     try:
                         the_person.first_name = json_person[self.PERSON_FIELD_FIRST_NAME]
-                        the_person.full_name = json_person[self.PERSON_FIELD_FULL_NAME]
+                    except:
+                        pass
+                    
+                    try:
                         the_person.last_name = json_person[self.PERSON_FIELD_LAST_NAME]
                     except:
                         pass
+
+                    try:                            
+                        the_person.full_name = json_person[self.PERSON_FIELD_FULL_NAME]
+                    except:
+                        pass
+
+                    if not the_person.full_name:
+                        if the_person.first_name and the_person.last_name:
+                            the_person.full_name = the_person.first_name + " " + the_person.last_name
+                        elif the_person.first_name:
+                            the_person.full_name = the_person.first_name
+                        elif the_person.last_name:
+                            the_person.full_name = the_person.last_name
 
                     try:
                         if json_person[self.PERSON_FIELD_IGNORE] == "True":
@@ -936,6 +953,9 @@ class _Config:
                     print(e)
                     pass
         
+        if (id == "c2f6b486-7f31-4f52-8fa8-01e1056cdb72"):
+            pass
+
         # if here, then the `conversation_id` was not associated to anyone
         if id not in self.ids_not_found:
             if self.debug:

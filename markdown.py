@@ -290,6 +290,7 @@ def format_markdown(the_message, the_config, people):
             error_str = the_config.get_str(the_config.STR_NO_FIRST_NAME_FOR_SLUG)
             errored_people.append(from_slug)
             logging.error(f"{error_str} '{from_slug}'")
+            print(the_message)
         return text
 
     # don't include first name if Note-to-Self since I know who I am!

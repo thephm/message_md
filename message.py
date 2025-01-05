@@ -179,14 +179,6 @@ def add_messages(messages, the_config):
 # -----------------------------------------------------------------------------
 def same_people(message_one, message_two):
 
-    if "Hey! I just got booked for a 3pm" in message_two.body and "Hey Mike, A pleasure to make your acquaintance" in message_one.body:
-        print("HERE1") # this happens
-        here1 = True
-        
-    if "Hey! I just got booked for a 3pm" in message_one.body and "Hey Mike, A pleasure to make your acquaintance" in message_two.body:
-        print("HERE2") # this doesn't happen
-        here2 = True
-
     if not message_one or not message_two:
         return False
   
@@ -204,12 +196,6 @@ def same_people(message_one, message_two):
         adjusted_to_slugs_two = set(message_two.to_slugs) - {message_one.from_slug}
         if adjusted_to_slugs_one == adjusted_to_slugs_two:
             return True
-
-    if "Hey! I just got booked for a 3pm" in message_two.body and "Hey Mike, A pleasure to make your acquaintance" in message_one.body:
-        print("HERE1 too") # this happens
-
-    if "Hey! I just got booked for a 3pm" in message_one.body and "Hey Mike, A pleasure to make your acquaintance" in message_two.body:
-        print("HERE2 too") # this doesn't happen
 
     return False
 
@@ -231,9 +217,6 @@ def add_message(the_message, thing):
 
     date_exists = False
 
-    if "Hey Mike, A pleasure to make your acquaintance" in the_message.body:
-        print("\nHere Mom!\n")
-
     try:
         # go through existing dates to see if messages are already there
         for messages_on_date in thing.messages:
@@ -245,22 +228,11 @@ def add_message(the_message, thing):
                 # go through the messages on the date
                 for a_message in messages_on_date.messages:
 
-                    if "Hey Mike, A pleasure to make your acquaintance" in a_message.body:
-                        print("\nHere three Mom!\n")
-                    if "Hey! I just got booked for a 3pm" in a_message.body and "Hey Mike, A pleasure to make your acquaintance" in the_message.body:
-                        print("case 1: \n\t a_message.body = " + a_message.body[0:20] + "\n\t the_message.body=" + the_message.body[0:20]) # this happens
-                    if "Hey! I just got booked for a 3pm" in a_message.body:
-                        print("case 1a: \n\t a_message.body = " + a_message.body[0:20] + "\n\t the_message.body=" + the_message.body[0:20]) # this happens
-                    
                     # see if the message is between the same people
                     if same_people(the_message, a_message):
-                        if "Hey! I just got booked for a 3pm" in a_message.body:
-                            print("case 1a: SAME people\n\t a_message.body = " + a_message.body[0:20] + "\n\t the_message.body=" + the_message.body[0:20]) # this happens
                         # add the message to that date and we're done
                         messages_on_date.messages.append(the_message)
                         return
-                    elif "Hey! I just got booked for a 3pm" in a_message.body:
-                        print("case 1a: NOT same people\n\t a_message.body = " + a_message.body[0:20] + "\n\t the_message.body=" + the_message.body[0:20]) # this happens
 
         # date already exists and this is a different conversation, i.e. between
         # different people, so append " - 1" to the date string so that this 
@@ -276,11 +248,6 @@ def add_message(the_message, thing):
                 the_message.date_str = new_date_str
             except Exception as e:
                 print(e)
-
-        if "Hey Mike, A pleasure to make your acquaintance" in the_message.body:
-            print("\ncase 1: date_str=" + the_message.date_str + "\n\t the_message.body=" + the_message.body[0:20] + "\n")
-        elif "Hey! I just got booked for a 3pm" in the_message.body:
-            print("\ncase 2: date_str=" + the_message.date_str + "\n\t the_message.body=" + the_message.body[0:20] + "\n") # this happens with "2024-12-20" TWICE
 
         # and add the message to the a new DatedMessages object
         new_date = DatedMessages()
