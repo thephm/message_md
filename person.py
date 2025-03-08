@@ -24,7 +24,7 @@ class Person:
         output += "ignore: " + str(self.ignore) + NEW_LINE
         output += "mobile: " + str(self.mobile) + NEW_LINE
         output += "linkedin_id: " + self.linkedin_id + NEW_LINE
-        output += "email_addresses: " + str(self.email_addresses)
+        output += "email_addresses: " + str(self.email_addresses) + NEW_LINE
         output += "service_id: " + self.service_id + NEW_LINE
         return output
         
