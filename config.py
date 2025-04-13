@@ -747,11 +747,10 @@ class _Config:
                             the_person.full_name = the_person.last_name
 
                     try:
-                        if json_person[self.PERSON_FIELD_IGNORE] == "True":
-                            the_person.ignore = True
                         the_person.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
                     except:
                         pass
+                    print(the_person.slug)
 
                     mobile = json_person[self.PERSON_FIELD_MOBILE]
                     if mobile:

@@ -31,6 +31,6 @@ Argument | Alternate | Description
 `-x` | `--max` | The maximum number of messages to process
 `-a` | `--add` | Add people to the output even if not in `people.json` config file
 
- ## License
+## License
 
- Apache License 2.0
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
