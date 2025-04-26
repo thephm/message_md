@@ -750,7 +750,6 @@ class _Config:
                         the_person.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
                     except:
                         pass
-                    print(the_person.slug)
 
                     mobile = json_person[self.PERSON_FIELD_MOBILE]
                     if mobile:
