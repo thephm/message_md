@@ -76,20 +76,17 @@ class Attachment:
 
         return link
 
-# -----------------------------------------------------------------------------
-#
-# Move the attachments from the attachments folder to the folder of the
-# specific person that shared them. If it's a group message, move the 
-# attachments under the `group` folder.
-#
-# Parameters
-# 
-#   - entities - either a collection of Person or Group objects
-#   - folder - top-level folder where the files will go
-#   - the_config - all the configuration
-# 
-# -----------------------------------------------------------------------------
 def move_attachments(entities, folder, the_config):
+    """
+    Move the attachments from the attachments folder to the folder of the
+    specific person that shared them. If it's a group message, move the
+    attachments under the `group` folder.
+    
+    Parameters:
+        entities (list): A collection of Person or Group objects.
+        folder (str): The top-level folder where the files will go.
+        the_config (Config): Configuration object containing settings
+    """
 
     source_file = ""
     dest_file = ""

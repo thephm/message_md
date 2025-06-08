@@ -24,15 +24,14 @@ class Reaction:
         self.target_time_sent = 0 # which timestamp the emoji relates to
         self.from_slug = ""       # person who had the reaction
 
-# -----------------------------------------------------------------------------
-#
-# An actual message.
-# 
-# - If `group_slug`` is non-blank, then `personSlug`` will be blank
-# - If `personSlug`` is non-blank, then `group_slug`` will be blank
-# 
-# -----------------------------------------------------------------------------
 class Message:
+    """
+    A message sent between people or to a group.
+
+    Notes:
+        - If `group_slug`` is non-blank, then `personSlug`` will be blank
+        - If `personSlug`` is non-blank, then `group_slug`` will be blank
+    """
     def __init__(self):
         self.id = ""            # ID from the messaging system
         self.time = 0           # time.struct_time object
@@ -110,22 +109,18 @@ class DatedMessages:
         self.date_str = ""
         self.messages = []
 
-# -----------------------------------------------------------------------------
-#
-# Check if the date "YYYY-MM-DD" is in any DatedMessages.date_str.
-#
-# Parameters:
-#  
-#   - date_str - the date string to check in the format "YYYY-MM-DD"
-#   - dated_messages_list - a list of DatedMessages objects
-#
-# Returns:
-#  
-#   - True if the date is found in any DatedMessages.date_str
-#   - False otherwise
-#
-# -----------------------------------------------------------------------------
 def date_exists(date_str, dated_messages_list):
+    """
+    Check if the date "YYYY-MM-DD" is in any DatedMessages.date_str.
+    
+    Args:
+        date_str (str): The date string to check in the format "YYYY-MM-DD".
+        dated_messages_list (list): A list of DatedMessages objects.
+
+    Returns:
+        bool: True if the date is found in any DatedMessages.date_str, False
+        otherwise.
+    """
 
     for dated_message in dated_messages_list:
         if dated_message.date_str.startswith(date_str):
@@ -133,52 +128,56 @@ def date_exists(date_str, dated_messages_list):
         
     return False
 
-# -----------------------------------------------------------------------------
-#
-# Divy up messages to the groups and people they were with, by day.
-# 
-# Parameters:
-#
-#   - messages - the messages to be added
-#   - the_config - the configuration, an instance of Config
-#
-# -----------------------------------------------------------------------------
 def add_messages(messages, the_config):
+    """
+    Go through all of the messages and add them to the groups and people they
+    were sent to, by day. 
+    
+    Args:
+        messages (list): List of Message objects to be processed.
+        the_config (Config): Configuration object containing groups and people.     
+        
+    Returns:
+        None
+    
+    Notes:
+        - Messages are processed in the order they are given.
+        - If `group_slug` set, add to the corresponding group
+        - If `from_slug` set, add to the corresponding person
+        - If sent to multiple people, add to each of them
+        - Messages are grouped by date and stored in DatedMessages objects
+    """
 
     for the_message in messages:
-        if bool(the_message.group_slug):
+        if the_message.group_slug:
             for group in the_config.groups:
                 if the_message.group_slug == group.slug:
                     add_message(the_message, group)
                     the_message.processed = True
+            continue
 
-        if not the_message.processed:
-            from_slug = the_message.from_slug
-            me_slug = the_config.me.slug
-            to_slugs = the_message.to_slugs
-                                   
-            for person in the_config.people:
-                # if from me and to me (and possibly others) OR from someone else to anyone
-                if (from_slug == me_slug and person.slug in to_slugs) or (from_slug != me_slug and person.slug == from_slug):
-                    add_message(the_message, person)
-                    the_message.processed = True
+        from_slug = the_message.from_slug
+        me_slug = the_config.me.slug
+        to_slugs = the_message.to_slugs
+                                
+        for person in the_config.people:
+            # if from me and to me (and possibly others) OR from someone else to anyone
+            if (from_slug == me_slug and person.slug in to_slugs) or (from_slug != me_slug and person.slug == from_slug):
+                add_message(the_message, person)
+                the_message.processed = True
 
-# -----------------------------------------------------------------------------
-#
-# Check if the messages are between the same people
-#
-# Parameters:
-# 
-#   - message_one - the first message
-#   - message_two - the second message
-# 
-# Returns:
-#
-#   - True if the messages are between the same people
-#   - False if the messages are not between the same people 
-# 
-# -----------------------------------------------------------------------------
 def same_people(message_one, message_two):
+    """
+    Check if two messages are between the same people or in the same group.
+
+    Args:
+        message_one (Message): The first message to compare.
+        message_two (Message): The second message to compare.      
+    
+    Returns:
+        bool: True if the messages are between the same people or in the same 
+        group, False otherwise.
+    """
 
     if not message_one or not message_two:
         return False
@@ -204,21 +203,21 @@ def same_people(message_one, message_two):
     
     return False
 
-# -----------------------------------------------------------------------------
-#
-# Add the message to the group or person on the day it was sent.
-#
-# Some services export messages from newest to oldest (i.e., LinkedIn) where
-# others do what would be expected (i.e., SMS Backup, Signal)
-# 
-# Parameters:
-#
-#  - message - the message to be added
-#  - thing - the group or person the message is to be added to
-#  - the_config - the configuration, an instance of Config
-#
-# -----------------------------------------------------------------------------
 def add_message(the_message, thing):
+    """
+    Add a message to a group or person, ensuring it is grouped by date.
+    
+    Args:
+        the_message (Message): The message to be added
+        thing (Group or Person): Group or person to which the message is added.
+    
+    Returns:
+        None
+
+    Notes:
+        Some services export messages from newest to oldest i.e., LinkedIn
+        where others do what would be expected i.e., SMS Backup Tool and Signal.
+    """
 
     date_exists = False
 
@@ -263,15 +262,20 @@ def add_message(the_message, thing):
     except Exception as e:
         logging.error(f"Error in add_message(): {e}")
 
-# -----------------------------------------------------------------------------
-#
-# Go through all of the messages and then the reactions and add them to the 
-# corresponding messages based on their timestamp (and author).
-#
-# Returns: the number of reactions matched
-#
-# -----------------------------------------------------------------------------
 def add_reactions(messages, reactions):
+    """
+    Go through all messages and then reactions and add them to the 
+    corresponding messages based on their timestamp (and author).
+
+    Returns: the number of reactions matched
+ 
+    Args:
+        messages (list): List of Message objects to be processed.     
+        reactions (list): List of Reaction objects to be processed.
+ 
+    Returns:
+        int: The number of reactions matched to messages.
+   """
     
     count = 0
 

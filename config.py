@@ -579,6 +579,18 @@ class _Config:
     def get_first_name_by_number(self, number):
         """
         Lookup a person's first name from their mobile number.
+        Parameters:
+            number (str): The phone number to look up, can be in various formats.   
+        Returns:
+            str: The first name of the person if found, otherwise an empty string.
+        Notes:
+            Lookup a person's first name from their mobile number. Matches
+            the last 10 digits which is not perfect but good enough for me! 
+
+            Why do this? because sometimes numbers are shown with "+1" for 
+            their country code and other times not. For example:
+
+            '2985551212' and '+12895551212'
         """
         
         global Strings

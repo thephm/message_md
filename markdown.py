@@ -38,27 +38,19 @@ YAML_MESSAGE_ID = "message-id"
 
 errored_people = []
 
-# -----------------------------------------------------------------------------
-#
-# Create a folder for a specific person or group's messages.
-#
-# Parameters:
-#
-#    - thing - a Person or a Group
-#    - the_config - all of the Config(uration)
-#
-# Returns:
-#
-#    - False - folder was not created
-#    - True - folder was created
-#
-# Notes:
-#
-#    - the `media` sub-folder will be created separately
-#
-# -----------------------------------------------------------------------------
 def create_thing_folder(thing, the_config):
-        
+    """
+    Create a folder for a specific person or group's messages.
+
+    Args:   
+        thing: a Person or a Group object
+        the_config (Config): an instance of Config containing configuration settings
+
+    Returns:
+        bool: True if the folder was created or already exists, False otherwise
+    """
+
+    import os        
     created = False
     folder = ""
 
@@ -76,8 +68,17 @@ def create_thing_folder(thing, the_config):
 
     return created
 
-# create a folder
 def create_folder(folder):
+    """
+    Create a folder if it does not exist.
+    
+    Args:
+        folder(str): the path to the folder to create
+    
+    Returns:
+        bool: True if the folder was created or already exists, False
+            if there was an error creating it
+    """
     
     result = False
 
@@ -93,23 +94,25 @@ def create_folder(folder):
 
     return result
 
-# -----------------------------------------------------------------------------
-#
-# Create a dated Markdown file with the messages between myself and the person.
-#  
-# Doesn't create/append to existing file as it's not smart enough to look 
-# inside the file to see what is already there.
-#
-# Only create files for messages after `config.from_date` if there's a date set
-#
-# Parameters:
-#
-#   - entity - a Person or a Group object
-#   - folder - folder where the markdown file is to be created
-#   - config - config settings
-# 
-# -----------------------------------------------------------------------------
 def create_markdown_file(entity, folder, the_config):
+    """
+    Create a Markdown file for the messages of a Person or Group.
+
+    Args:  
+        entity (Group or Person): A Person or Group object containing messages
+        folder (str): The folder where the Markdown file will be created
+        the_config (Config): An instance of Config containing configuration settings
+        
+    Returns: None
+
+    Notes:
+        - Only create files for messages after `config.from_date` if there's 
+        a date set
+        - Checks if the file already exists and only writes to it if it is not
+        too old (less than WELL_AGED seconds) or if the message is a note-to-self.
+        - Formats each message into Markdown, including metadata such as date, 
+        time, subject, service, and tags.   
+    """
 
     exists = False
     
@@ -155,17 +158,17 @@ def create_markdown_file(entity, folder, the_config):
                     except Exception as e:
                         pass
 
-# -----------------------------------------------------------------------------
-#
-# Parameters:
-#
-#   - filename: the file to open
-#   - the_config: all the settings, instance of Config
-#
-# Returns: a file handle
-#
-# -----------------------------------------------------------------------------
 def open_output_file(filename, the_config):
+    """
+    Open a file for appending, creating it if it doesn't exist.
+
+    Args:
+        filename (str): The name of the file to open
+        the_config (Config): An instance of Config containing configuration settings
+    
+    Returns:
+        output_file: A file handle for the opened file, or False if it could not be opened
+    """
 
     output_file = False
 
@@ -177,21 +180,24 @@ def open_output_file(filename, the_config):
 
     return output_file
 
-# -----------------------------------------------------------------------------
-# 
-# Create the metadata aka frontmatter for the Markdown file
-#
-# Parameters:
-#
-#    - the_message - the messages to be added
-#    - the_config - the configuration, an instance of Config
-#
-# Notes:
-#
-#    `service` is what was used to send/receive message e.g. YAML_SERVICE_SMS
-#
-# -----------------------------------------------------------------------------
 def get_frontmatter(the_message, the_config):
+    """
+    Generate the metadata aka frontmatter for a Markdown file based on the 
+    message details.
+
+    Args:
+        the_message (Message): The message object containing details like date, time, subject, etc.
+        the_config (Config): An instance of Config containing configuration settings
+    
+    Returns:
+        str: the frontmatter string formatted in YAML
+    
+    Notes:
+        - `service` is what was used to send/receive message e.g. YAML_SERVICE_SMS
+        - Ensures the `to_slugs` list is unique and ordered.
+        - The frontmatter is formatted with YAML dashes and includes the service type
+        (e.g., email, chat).
+    """
 
     # remove duplicate slugs and preserve the order
     the_message.to_slugs = list(dict.fromkeys(the_message.to_slugs))
@@ -256,18 +262,20 @@ def get_frontmatter(the_message, the_config):
 
     return frontmatter
 
-# -----------------------------------------------------------------------------
-#
-# Format a Message object in Markdown.
-#
-# Parameters:
-#
-#    - the_message - the message being converted to Markdown
-#    - the_config - for settings
-#    - people - array of Persons
-#
-# -----------------------------------------------------------------------------
 def format_markdown(the_message, the_config, people):
+    """
+    Format a Message object into Markdown text.
+    
+    Args:
+        the_message (Message): the message to format
+        the_config (Config): an instance of Config containing configuration settings
+        people ([Person]): a list of Person objects to get first names from
+        
+    Returns:
+        str: the formatted Markdown text for the message
+    """
+
+    global errored_people
 
     text = ""
     first_name = ""
@@ -358,21 +366,20 @@ def format_markdown(the_message, the_config, people):
 
     return text
 
-# -----------------------------------------------------------------------------
-#
-# Create folders for the daily notes. 
-#
-# Parameters:
-#
-#    - the_config - all of the Config(uration)
-#
-# Notes:
-#
-#    - this is for notes-to-self that are stored in a separate folder from all
-#      of the other messages
-# 
-# -----------------------------------------------------------------------------
 def create_daily_notes_folders(the_config):
+    """
+    Create the daily notes folder structure if it doesn't exist.
+    
+    Args:
+        - the_config (Config): an instance of Config containing configuration settings
+    
+    Returns:
+        daily_notes_folder (str): the path to the daily notes folder
+
+    Notes:
+        - this is for notes-to-self that are stored in a separate folder from all
+      of the other messages
+    """
 
     daily_notes_folder = os.path.join(the_config.output_folder, the_config.daily_notes_subfolder)
     create_folder(daily_notes_folder)
@@ -381,24 +388,23 @@ def create_daily_notes_folders(the_config):
 
     return daily_notes_folder
 
-# -----------------------------------------------------------------------------
-#
-# Generate the output folder name for the media files (attachments).
-#
-# Notes
-# 
-#   - if it's a regular message, the folder will be the destination person slug
-#   - if it's an attachment, the folder will be the source (sender)
-#
-# Parameters:
-#
-#   - entity: a Person or a Group object
-#   - people_folder: root folder where the subfolder per-person / files created
-#   - the_message: the current message being processed
-#   - the_config - all of the Config(uration)
-#
-# -----------------------------------------------------------------------------
 def get_media_folder_name(entity, people_folder, the_message, the_config):
+    """
+    Generate the output folder name for media files (attachments).
+
+    Args:
+        - entity: a Person or a Group object
+        - people_folder (str): root folder where the subfolder per-person created
+        - the_message (Message): the current message being processed
+        - the_config (Config): the configuration instance
+    
+    Returns:
+        folder: the folder path where the media files will be stored
+
+    Notes
+        - if it's a regular message, folder will be destination person slug
+        - if it's an attachment, the folder will be the source (sender)
+    """
 
     folder = ""
 
@@ -417,23 +423,20 @@ def get_media_folder_name(entity, people_folder, the_message, the_config):
 
     return folder
 
-# -----------------------------------------------------------------------------
-#
-# Generate the output folder name.
-#
-# Notes
-# 
-#   - if it's a regular message, the folder will be the destination person slug
-#
-# Parameters:
-#
-#   - entity: a Person or a Group object
-#   - output_folder: root folder where the subfolder per-person / files created
-#   - the_message: the current message being processed
-#   - the_config: the configuration
-#
-# -----------------------------------------------------------------------------
 def get_markdown_folder_name(entity, output_folder, the_message, the_config):
+    """
+    Generate the output folder name for the Markdown files.
+    
+    Args:
+        entity: a Person or a Group object
+        output_folder (str): root folder where the subfolder per-person / 
+            files are created
+        the_message (Message): the current message being processed
+        the_config (Config): the configuration instance
+    
+    Returns:
+        str: the folder path where the Markdown files will be stored
+    """
 
     folder = ""
 

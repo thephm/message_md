@@ -27,12 +27,11 @@ def setup_folders(the_config):
     returns the file path.
     
     Args:
-        the_config(Config): Configuration object containing settings, paths, 
+        the_config (Config): Configuration object containing settings, paths, 
         and collections of Groups of Persons   
     
     Returns:
-        dest_file: The path to the destination file where the messages are 
-            archived.
+        str: The path to the destination file where the messages are archived.
     """
 
     dest_file = ""
@@ -81,7 +80,8 @@ def get_markdown(the_config, load_messages, messages, reactions):
             and collections of Groups of Persons
         load_messages(function): Function to load messages into `messages[]`
         messages(list): List to hold all of the Message objects
-        reactions(list): List to hold all of the Reaction objects   
+        reactions(list): List to hold all of the Reaction objects
+         
     Returns:   
         bool: True if the Markdown generation was successful, False otherwise.
     """
