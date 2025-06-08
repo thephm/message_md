@@ -20,18 +20,20 @@ def setup(the_config, service):
     
     return result
 
-# -----------------------------------------------------------------------------
-#
-# Creates an archive subfolder and then either copies or moves - depending on 
-# configuration - the message file there, names the file with date/time, and
-# returns the file path.
-#
-# Parameters
-# 
-#   - the_config - settings including collections of Groups of Persons
-# 
-# -----------------------------------------------------------------------------
 def setup_folders(the_config):
+    """
+    Creates an archive subfolder and then either copies or moves - depending on
+    configuration - the message file there, names the file with date/time, and
+    returns the file path.
+    
+    Args:
+        the_config(Config): Configuration object containing settings, paths, 
+        and collections of Groups of Persons   
+    
+    Returns:
+        dest_file: The path to the destination file where the messages are 
+            archived.
+    """
 
     dest_file = ""
     
@@ -68,21 +70,21 @@ def setup_folders(the_config):
 
     return dest_file
 
-# -----------------------------------------------------------------------------
-#
-# Set up all of the folders and then call back to load_messages() from the 
-# client of this library to do specific message type (e.g. SMS) loading of
-# the messages. 
-#
-# Parameters:
-# 
-#   - the_config - settings including collections of Groups of Persons
-#   - load_messages - function that loads the messages into `messages[]`
-#   - messages - array containing all of the Messages
-#   - reactions - array containing all of the Reactions
-# 
-# -----------------------------------------------------------------------------
 def get_markdown(the_config, load_messages, messages, reactions):
+    """
+    Set up all of the folders and then call back to load_messages() from the
+    client of this library to do specific message type (e.g. SMS) loading of
+    the messages. 
+    
+    Args:
+        the_config(Config): Configuration object containing settings, paths, 
+            and collections of Groups of Persons
+        load_messages(function): Function to load messages into `messages[]`
+        messages(list): List to hold all of the Message objects
+        reactions(list): List to hold all of the Reaction objects   
+    Returns:   
+        bool: True if the Markdown generation was successful, False otherwise.
+    """
 
     dest_file = ""
 

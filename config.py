@@ -130,6 +130,8 @@ class _Config:
         self.STR_DATE_STRING_DOES_NOT_MATCH_FORMAT = 46
         self.STR_THESE_EMAIL_ADDRESSES_NOT_FOUND = 47
         self.STR_OR_WITH_FULL_NAME = 48
+        self.STR_COULD_NOT_SETUP = 49
+        self.STR_COULD_NOT_CREATE_ATTACHMENTS_SUBFOLDER = 50
 
         self.MAX_LEN_QUOTED_TEXT = 70
 
@@ -208,12 +210,10 @@ class _Config:
         self.names_not_found = [] # Signal full name
         self.create_people = False
 
-    # -------------------------------------------------------------------------
-    #
-    # Return a string represention of the configuration.
-    #
-    # -------------------------------------------------------------------------
     def __str__(self):
+        """
+        Return a string represention of the configuration.
+        """
         
         output = self.SETTING_MY_SLUG + ": " + str(self.me.slug) + "\n"
         output += "config_folder: " + str(self.config_folder) + "\n"
@@ -241,12 +241,14 @@ class _Config:
         
         return output
 
-    # -------------------------------------------------------------------------
-    #
-    # Load the settings from `self.settings_filename` file.
-    #
-    # -------------------------------------------------------------------------
     def load_settings(self):
+        """
+        Load the settings from the `self.settings_filename` file in the 
+        config folder.
+        
+        Returns:
+            bool: True if settings were loaded successfully, False otherwise.
+        """
 
         result = False
         settings_file = False
@@ -331,12 +333,10 @@ class _Config:
         me.folder_created = the_person.folder_created
         me.messages = []
 
-    # -------------------------------------------------------------------------
-    #
-    # Parse the command line arguments.  
-    #
-    # -------------------------------------------------------------------------
     def get_arguments(self):
+        """
+        Parse the command line arguments and return them as an object.
+        """
 
         parser = ArgumentParser()
 
@@ -387,13 +387,14 @@ class _Config:
 
         return args
 
-    # -------------------------------------------------------------------------
-    #
-    # Load the configuration settings and override where command-line options
-    # were provided.
-    #
-    # -------------------------------------------------------------------------
     def setup(self, service):
+        """
+        Load the configuration settings and override where command-line options
+        were provided.
+
+        Args:
+            service (str): The service to set up, e.g. "signal"
+        """
 
         loaded = False
         init = False
@@ -453,6 +454,8 @@ class _Config:
                 if self.load_people():
                     if self.load_groups():
                         loaded = True
+                    else:
+                        print(self.get_str(self.STR_COULD_NOT_LOAD_CONFIG) + ": " + GROUPS_FILE_NAME)   
 
         self.people_folder = os.path.join(self.output_folder, self.people_subfolder)
         self.groups_folder = os.path.join(self.people_folder, self.groups_subfolder)
@@ -487,12 +490,11 @@ class _Config:
 #    def setsource_folder(folder_name, self):
 #        self.source_folder = folder_name
         
-    # -------------------------------------------------------------------------
-    #
-    # Load strings used in the script and return the number of strings loaded.
-    #
-    # -------------------------------------------------------------------------
     def load_strings(self):
+        """
+        Load the strings from the `strings.json` file and return the number of
+        strings loaded.
+        """
 
         try:
             strings_filename = os.path.join(RESOURCES_FOLDER, STRINGS_FILE_NAME)
@@ -515,16 +517,13 @@ class _Config:
         
         return len(self.strings)
     
-    # -------------------------------------------------------------------------
-    #
-    # Given a filename, return the MIME type or None if none found
-    #
-    # Parameters:
-    #
-    #   - filename - the name of the file to check
-    #
-    # -------------------------------------------------------------------------
     def get_mime_type(self, filename):
+        """
+        Given a filename, return the MIME type or None if none found.
+
+        Args:
+            filename (str): The name of the file to check for MIME type.   
+        """
         try:
             # ensure the MIME types are loaded
             if not self.mime_types:
@@ -546,12 +545,12 @@ class _Config:
         # default to None if no match is found
         return None
         
-    # -------------------------------------------------------------------------
-    #
-    # Load the mapping of file extensions to MIME type, e.g. `jpg` is JPEG
-    #
-    # -------------------------------------------------------------------------
     def load_mime_types(self):
+        """
+        Load the MIME types from a JSON file and return the mapping.
+        e.g. `jpg` is JPEG
+
+        """
 
         self.mime_types = None
         
@@ -577,12 +576,10 @@ class _Config:
         
         return self.mime_types
     
-    # -------------------------------------------------------------------------
-    #
-    # Lookup a person's first name from their mobile number.
-    #
-    # ------------------------------------------------------------------------- 
     def get_first_name_by_number(self, number):
+        """
+        Lookup a person's first name from their mobile number.
+        """
         
         global Strings
 
@@ -603,12 +600,10 @@ class _Config:
 
         return first_name
 
-    # -------------------------------------------------------------------------
-    #
-    # Lookup a person's first-name from their slug
-    #
-    # -------------------------------------------------------------------------
     def get_first_name_by_slug(self, slug):
+        """
+        Lookup a person's first-name from their slug.
+        """
 
         first_name = ""
 
@@ -622,12 +617,10 @@ class _Config:
 
         return first_name
     
-    # -------------------------------------------------------------------------
-    #
-    # Get the slug for a group of people based on a collection of phone numbers
-    #
-    # -------------------------------------------------------------------------
     def get_group_slug_by_phone_numbers(self, phone_numbers):
+        """
+        Lookup the group slug based on a collection of phone numbers.
+        """
         slugs = []
         slug = ""
         found = False
@@ -655,12 +648,10 @@ class _Config:
 
         return slug
                     
-    # -------------------------------------------------------------------------
-    #
-    # Lookup the group slug based on it's unique ID.
-    #
-    # -------------------------------------------------------------------------
     def get_group_slug(self, id):
+        """
+        Lookup the group slug based on a group ID.
+        """
         slug = ""
 
         for the_group in self.groups:
@@ -669,12 +660,10 @@ class _Config:
         
         return slug
 
-    # -------------------------------------------------------------------------
-    #
-    # Lookup the group slug based on a conversation ID.
-    #
-    # -------------------------------------------------------------------------
-    def get_group_slug_by_conversation_id(self, id):    
+    def get_group_slug_by_conversation_id(self, id):
+        """
+        Lookup the group slug based on a conversation ID.
+        """ 
         slug = ""
 
         for the_group in self.groups:
@@ -683,23 +672,19 @@ class _Config:
         
         return slug
     
-    # -------------------------------------------------------------------------
-    #
-    # Parse the email address(es) for the person. Placeholder for now
-    #
-    # -------------------------------------------------------------------------
     def parse_email(the_person, data):
+        """
+        Parse the email address(es) for the person. Placeholder for now
+        """
         count = 0
 
         return count
 
-    # -------------------------------------------------------------------------
-    #
-    # Load the people and return the number of people loaded from the 
-    # `people.json` config file.
-    #
-    # -------------------------------------------------------------------------
     def load_people(self):
+        """
+        Load the people and return the number of people loaded from the 
+        `people.json` config file.
+        """
 
         try:
             people_filename = os.path.join(self.config_folder, PEOPLE_FILE_NAME)
@@ -788,12 +773,11 @@ class _Config:
 
         return len(self.people)
 
-    # -------------------------------------------------------------------------
-    #
-    # Load the groups and return the number of groups loaded.
-    #
-    # -------------------------------------------------------------------------
     def load_groups(self):
+        """
+        Load the groups from the `groups.json` config file and return the number
+        of groups loaded.
+        """
 
         try:
             groups_filename = os.path.join(self.config_folder, GROUPS_FILE_NAME)
@@ -826,12 +810,10 @@ class _Config:
 
         return len(self.groups)
     
-    # -------------------------------------------------------------------------
-    #
-    # Retrieve a Person based on their email address.
-    #
-    # -------------------------------------------------------------------------
     def get_person_by_email(self, email_address):
+        """
+        Lookup a person in the people array from their email address.
+        """
 
         result = False
 
@@ -843,22 +825,25 @@ class _Config:
 
         return result
 
-    # -------------------------------------------------------------------------
-    #
-    # Lookup a person in people array from their phone number. Matches the last 
-    # 10 digits which is not perfect but good enough for me! 
-    # 
-    # Why do this? because sometimes numbers are shown with "+1" for
-    # their country code and other times not. For example:
-    #
-    #  '2985551212' and '+12895551212"
-    #
-    # Parameters:
-    # 
-    #   - number - the phone number
-    #
-    # -------------------------------------------------------------------------
     def get_person_by_number(self, number):
+        """
+        Lookup a person in the people array from their phone number.
+        
+        Parameters:
+            number (str): The phone number to look up, can be in various formats.
+        
+        Returns:
+            Person: The Person object if found, otherwise False.
+
+        Notes:
+            Lookup a person in people array from their phone number. Matches
+            the last 10 digits which is not perfect but good enough for me! 
+
+            Why do this? because sometimes numbers are shown with "+1" for 
+            their country code and other times not. For example:
+
+            '2985551212' and '+12895551212"
+        """
 
         for the_person in self.people:
             if len(the_person.mobile):
@@ -868,23 +853,21 @@ class _Config:
                 except:
                     return False
             
-    # -------------------------------------------------------------------------
-    #
-    # Lookup a person using their full name. Returns the Person object.  
-    #
-    # Parameters:
-    # 
-    #   - name - the full name of the person
-    #
-    # Notes:
-    #
-    #   - Added this for Signal contacts that use "Private" mode which 
-    #     hides their phone number. In that case, we can refer to their 
-    #     `profileFullName' field
-    #
-    # -------------------------------------------------------------------------
     def get_person_by_full_name(self, name):
+        """
+        Lookup a person in the people array from their full name.
+        
+        Parameters:
+            name (str): The full name of the person to look up.
 
+        Returns:
+            Person: The Person object if found, otherwise False.
+            
+        Notes:
+            Added this for Signal contacts that use "Private" mode which 
+            hides their phone number. In that case, we can refer to their 
+            `profileFullName' field
+        """
         if name:
             for the_person in self.people:
                 if the_person.full_name == name:
@@ -899,16 +882,16 @@ class _Config:
 
         return False
                 
-    # -------------------------------------------------------------------------
-    #
-    # Lookup a person in people array from their LinkedIn ID.
-    # 
-    # Parameters:
-    # 
-    #   - id - the LinkedIn ID
-    #
-    # -------------------------------------------------------------------------
     def get_person_by_linkedin_id(self, id):
+        """
+        Lookup a person in the people array from their LinkedIn ID.
+
+        Parameters:
+            id (str): The LinkedIn ID to look up.
+        
+        Returns:
+            Person: The Person object if found, otherwise False.
+        """
 
         if not len(id):
             return False
@@ -922,25 +905,20 @@ class _Config:
                 print(e)
                 return False
             
-    # -------------------------------------------------------------------------
-    #
-    # Lookup a person in people array from their Conversation ID.
-    #
-    # Parameters:
-    # 
-    #   - id - conversation ID for the person
-    #
-    # Returns:
-    #
-    #   - False if no person found
-    #   - Person object if found 
-    # 
-    # Notes:
-    # 
-    #   - @todo: if this is specific to Signal, should not be here
-    #
-    # -------------------------------------------------------------------------
     def get_person_by_conversation_id(self, id):
+        """
+        Lookup a person in the people array from their conversation ID.
+        
+        Parameters:
+            id (str): The conversation ID to look up.
+        
+        Returns:
+            Person: The Person object if found, otherwise False.
+
+        Notes:
+            @todo: if this is specific to Signal, should not be here
+        
+        """
 
         if len(id):
             for the_person in self.people:
@@ -963,16 +941,16 @@ class _Config:
 
         return False
              
-    # -------------------------------------------------------------------------
-    #
-    # Get a string out of strings based on its ID.
-    # 
-    # Parameters:
-    # 
-    #   - id - the string ID
-    #
-    # -------------------------------------------------------------------------
     def get_str(self, string_number):
+        """
+        Get a string from the strings array based on its number and language.
+        
+        Parameters:
+            string_number (str): The string number to look up.  
+        
+        Returns:
+            str: The string text if found, otherwise an empty string.
+        """
 
         result = ""
 

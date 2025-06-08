@@ -47,3 +47,5 @@
 {"language":"1","number":"46","text":"Error: Date string does not match format: YYYY-MM-DD"}
 {"language":"1","number":"47","text":"These email addresses were not found"}
 {"language":"1","number":"48","text":"or with full name"}
+{"language":"1","number":"49","text":"message_md.setup failed"}
+{"language":"1","number":"50","text":"Could not create the attachments folder"}
