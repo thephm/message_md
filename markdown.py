@@ -94,7 +94,7 @@ def create_folder(folder):
 
     return result
 
-def create_markdown_file(entity, folder, the_config):
+def create_markdown_files(entity, folder, the_config):
     """
     Create a Markdown file for the messages of a Person or Group.
 
@@ -408,10 +408,10 @@ def get_media_folder_name(entity, people_folder, the_message, the_config):
 
     folder = ""
 
-    # if the daily notes folder is defined, put the notes-to-self in there
-    if type(entity) == group.Group:
+    if isinstance(entity, group.Group):
         folder = os.path.join(people_folder, entity.slug)
 
+    # if the daily notes folder is defined, put the notes-to-self in there
     elif the_message.is_note_to_self() and len(the_config.daily_notes_subfolder):
         folder = os.path.join(the_config.output_folder, the_config.daily_notes_subfolder)
 
@@ -440,10 +440,10 @@ def get_markdown_folder_name(entity, output_folder, the_message, the_config):
 
     folder = ""
 
-    # if the daily notes folder is defined, put the notes-to-self in there
     if isinstance(entity, group.Group):
         folder = os.path.join(output_folder, entity.slug)
     elif the_message.is_note_to_self() and len(the_config.daily_notes_subfolder):
+        # the daily notes folder is defined, so put notes-to-self there
         folder = the_config.daily_notes_subfolder
     else:
         folder = os.path.join(output_folder, entity.slug)

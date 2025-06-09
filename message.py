@@ -6,6 +6,7 @@
 
 import time
 import logging
+import uuid
 
 NEW_LINE = "\n"
 
@@ -33,6 +34,7 @@ class Message:
         - If `personSlug`` is non-blank, then `group_slug`` will be blank
     """
     def __init__(self):
+        self.uuid = uuid.uuid4() # unique ID for the message
         self.id = ""            # ID from the messaging system
         self.time = 0           # time.struct_time object
         self.timestamp = 0      # original timestamp in the message
@@ -53,7 +55,8 @@ class Message:
         self.service = ""       # mesaging service e.g. YAML_SERVICE_SIGNAL
 
     def __str__(self):
-        output = "id: " + str(self.id) + NEW_LINE
+        output = "uuid: " + str(self.uuid) + NEW_LINE
+        output += "id: " + str(self.id) + NEW_LINE
         output += "timestamp: " + str(self.timestamp) + NEW_LINE
         output += "date_str: " + str(self.date_str) + NEW_LINE
         output += "time_str: " + str(self.time_str) + NEW_LINE

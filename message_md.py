@@ -76,11 +76,11 @@ def get_markdown(the_config, load_messages, messages, reactions):
     the messages. 
     
     Args:
-        the_config(Config): Configuration object containing settings, paths, 
+        the_config (Config): Configuration object containing settings, paths, 
             and collections of Groups of Persons
-        load_messages(function): Function to load messages into `messages[]`
-        messages(list): List to hold all of the Message objects
-        reactions(list): List to hold all of the Reaction objects
+        load_messages (function): Function to load messages into `messages[]`
+        messages (list): List to hold all of the Message objects
+        reactions (list): List to hold all of the Reaction objects
          
     Returns:   
         bool: True if the Markdown generation was successful, False otherwise.
@@ -92,10 +92,10 @@ def get_markdown(the_config, load_messages, messages, reactions):
     if the_config.service != markdown.YAML_SERVICE_EMAIL:
         dest_file = setup_folders(the_config)
 
-    if the_config.service == markdown.YAML_SERVICE_EMAIL or os.path.exists(dest_file): 
+    if os.path.exists(dest_file) or the_config.service == markdown.YAML_SERVICE_EMAIL:
         
         if load_messages(dest_file, messages, reactions, the_config):
-            
+
             # add the reactions to the corresponding messages
             message.add_reactions(messages, reactions)
 
@@ -115,11 +115,11 @@ def get_markdown(the_config, load_messages, messages, reactions):
             for the_person in the_config.people:
                 if not the_person.ignore:
                     folder = os.path.join(the_config.people_folder, the_person.slug)
-                    markdown.create_markdown_file(the_person, folder, the_config)
+                    markdown.create_markdown_files(the_person, folder, the_config)
 
             # generate the Markdown for each group
             for the_group in the_config.groups:
                 folder = os.path.join(the_config.groups_folder, the_group.slug)
-                markdown.create_markdown_file(the_group, folder, the_config)
+                markdown.create_markdown_files(the_group, folder, the_config)
 
     return True
