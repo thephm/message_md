@@ -69,6 +69,9 @@ class Message:
         output += "reactions: " + str(len(self.reactions)) + NEW_LINE
         output += "subject: " + str(self.subject) + NEW_LINE
         output += "body: " + str(self.body)
+
+        for attachment in self.attachments:
+            output += NEW_LINE + "Attachment: " + NEW_LINE + str(attachment)
         return output
 
     # checks if this is a message sent to myself i.e. "Note to Self" feature

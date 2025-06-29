@@ -54,8 +54,16 @@ class Attachment:
 
         return filename
 
-    # Generates the Markdown for media links e.g. [[photo.jpg]]
     def generate_link(self, the_config):
+        """
+        Generate the Markdown link for the attachment based on its type and configuration.
+        
+        Parameters:
+            the_config (Config): The configuration object containing settings for the service.
+        
+        Returns:    
+            str: The Markdown link for the attachment.
+        """
         link = ""
 
         # @todo this should be part of the Signal code not here! 
