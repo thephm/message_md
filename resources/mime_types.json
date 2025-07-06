@@ -39,6 +39,7 @@
     "application/postscript":"eps",
     "application/pdf":"pdf",
     "application/msword":"doc",
+    "application/excalidraw":"excalidraw",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document":"docx",
     "application/vnd.ms-excel":"xls",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":".xlsw",

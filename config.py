@@ -1,16 +1,20 @@
 import json
 import os
+import sys
     
 import markdown
 import logging
 
-import person
 import group
 from datetime import datetime
 
 import pathlib
 from pathlib import Path
 from argparse import ArgumentParser
+
+sys.path.insert(1, '../hal/')
+import person
+from person import Person
 
 # config
 CONFIG_FOLDER = "config"
@@ -326,7 +330,7 @@ class _Config:
         me.slug = the_person.slug
         me.first_name = the_person.first_name
         me.last_name = the_person.last_name
-        me.mobile = the_person.mobile
+        me.mobile = the_person.contact.mobile
         me.linkedin_id = the_person.linkedin_id
         me.email_addresses = the_person.email_addresses
         me.conversation_id = the_person.conversation_id
@@ -387,13 +391,14 @@ class _Config:
 
         return args
 
-    def setup(self, service):
+    def setup(self, service, messages_file_needed=True):
         """
         Load the configuration settings and override where command-line options
         were provided.
 
         Args:
             service (str): The service to set up, e.g. "signal"
+            messages_file_needed (bool): Whether a messages file is needed 
         """
 
         loaded = False
@@ -476,7 +481,7 @@ class _Config:
                     init = True
             elif not self.filename:
                 print('No messages file specified')
-            elif not os.path.exists(self.filename):
+            elif not os.path.exists(self.filename) and messages_file_needed:
                 print('The messages file "' + self.filename + '" could not be found')
             else:
                 init = True
@@ -731,17 +736,18 @@ class _Config:
                         pass
 
                     try:                            
-                        the_person.full_name = json_person[self.PERSON_FIELD_FULL_NAME]
+                        the_person.identity.full_name = json_person[self.PERSON_FIELD_FULL_NAME]
                     except:
                         pass
 
-                    if not the_person.full_name:
-                        if the_person.first_name and the_person.last_name:
-                            the_person.full_name = the_person.first_name + " " + the_person.last_name
-                        elif the_person.first_name:
-                            the_person.full_name = the_person.first_name
-                        elif the_person.last_name:
-                            the_person.full_name = the_person.last_name
+                    the_identity = the_person.identity
+                    if not the_identity.full_name:
+                        if the_identity.first_name and the_identity.last_name:
+                            the_person.identity.full_name = the_identity.first_name + " " + the_identity.last_name
+                        elif the_identity.first_name:
+                            the_person.identity.full_name = the_identity.first_name
+                        elif the_identity.last_name:
+                            the_person.identity.full_name = the_identity.last_name
 
                     try:
                         the_person.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
@@ -751,7 +757,7 @@ class _Config:
                     mobile = json_person[self.PERSON_FIELD_MOBILE]
                     if mobile:
                         mobile = mobile.replace('+', '').replace('-', '')
-                        the_person.mobile = mobile
+                        the_person.contact.mobile = mobile
                     
                     try:
                         email_addresses = json_person[self.PERSON_FIELD_EMAIL].lower()
@@ -858,9 +864,9 @@ class _Config:
         """
 
         for the_person in self.people:
-            if len(the_person.mobile):
+            if len(the_person.contact.mobile):
                 try:
-                    if the_person.mobile[-10:] == number[-10:]:
+                    if the_person.contact.mobile[-10:] == number[-10:]:
                         return the_person
                 except:
                     return False
@@ -882,7 +888,7 @@ class _Config:
         """
         if name:
             for the_person in self.people:
-                if the_person.full_name == name:
+                if the_person.identity.full_name == name:
                     return the_person
 
         if name not in self.names_not_found:
@@ -976,3 +982,26 @@ class _Config:
 
         return result
     
+    def create_media_folder(self, filename, slug):
+        """
+        Create a media folder for the given filename and return the path.
+        Parameters:
+            filename (str): The name of the file to create a folder for
+            slug (str): The slug of the person or group to create folder for
+        Returns:
+            str: The path to the media folder where the file will be stored.
+        """
+
+        # find the place to put it
+        folder = os.path.join(self.output_folder, self.people_subfolder)
+        if slug:
+            folder = os.path.join(folder, slug)
+        folder = os.path.join(folder, self.media_subfolder)
+        file_path = os.path.join(folder, filename)
+        
+        # if the folder doesn't exist, create it
+        if not os.path.exists(folder):
+            # create the folder
+            os.makedirs(folder)
+
+        return file_path

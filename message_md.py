@@ -14,9 +14,9 @@ import markdown
 import attachment
 import message
 
-def setup(the_config, service):
+def setup(the_config, service, message_file_neeeded=True):
 
-    result = the_config.setup(service)
+    result = the_config.setup(service, message_file_neeeded)
     
     return result
 
