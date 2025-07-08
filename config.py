@@ -24,6 +24,8 @@ GROUPS_FILE_NAME  = "groups.json"
 MIME_TYPES_FILE_NAME = "mime_types.json"
 RESOURCES_FOLDER = "../../github/message_md/resources"
 
+IGNORE_SLUG = "ignore"
+
 # not used yet, thinking about it
 class Setting:
     def __init__(self):
@@ -723,7 +725,10 @@ class _Config:
 
                     # the person must have a slug
                     the_person.slug = json_person[self.PERSON_FIELD_SLUG]
-                    
+
+                    if the_person.slug == IGNORE_SLUG:
+                        the_person.ignore = True
+
                     # the person can optionally have these fields
                     try:
                         the_person.first_name = json_person[self.PERSON_FIELD_FIRST_NAME]

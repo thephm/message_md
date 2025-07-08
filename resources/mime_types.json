@@ -48,5 +48,6 @@
     "application/xml":"xml",
     "application/vnd.google-earth.kml+xml":"kml",
     "application/vnd.wap.multipart.related":"wap",
-    "application/smil":"smil"
+    "application/smil":"smil",
+    "application/octet-stream":"bin"
 }
