@@ -398,9 +398,9 @@ class _Config:
         Load the configuration settings and override where command-line options
         were provided.
 
-        Args:
-            service (str): The service to set up, e.g. "signal"
-            messages_file_needed (bool): Whether a messages file is needed 
+        Parameters:
+        service (str): The service to set up, e.g. "signal"
+        messages_file_needed (bool): Whether a messages file is needed 
         """
 
         loaded = False
@@ -494,9 +494,6 @@ class _Config:
         
         return init
 
-#    def setsource_folder(folder_name, self):
-#        self.source_folder = folder_name
-        
     def load_strings(self):
         """
         Load the strings from the `strings.json` file and return the number of
@@ -528,8 +525,8 @@ class _Config:
         """
         Given a filename, return the MIME type or None if none found.
 
-        Args:
-            filename (str): The name of the file to check for MIME type.   
+        Parameters:
+        filename (str): The name of the file to check for MIME type.   
         """
         try:
             # ensure the MIME types are loaded
@@ -556,7 +553,6 @@ class _Config:
         """
         Load the MIME types from a JSON file and return the mapping.
         e.g. `jpg` is JPEG
-
         """
 
         self.mime_types = None
@@ -586,18 +582,21 @@ class _Config:
     def get_first_name_by_number(self, number):
         """
         Lookup a person's first name from their mobile number.
+
         Parameters:
-            number (str): The phone number to look up, can be in various formats.   
+        number (str): The phone number to look up, can be in various formats.   
+        
         Returns:
-            str: The first name of the person if found, otherwise an empty string.
+        str: The first name of the person if found, otherwise an empty string.
+        
         Notes:
-            Lookup a person's first name from their mobile number. Matches
-            the last 10 digits which is not perfect but good enough for me! 
+        Lookup a person's first name from their mobile number. Matches
+        the last 10 digits which is not perfect but good enough for me! 
 
-            Why do this? because sometimes numbers are shown with "+1" for 
-            their country code and other times not. For example:
+        Why do this? because sometimes numbers are shown with "+1" for 
+        their country code and other times not. For example:
 
-            '2985551212' and '+12895551212'
+        '2985551212' and '+12895551212'
         """
         
         global Strings
@@ -755,7 +754,7 @@ class _Config:
                             the_person.identity.full_name = the_identity.last_name
 
                     try:
-                        the_person.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
+                        the_person.socials.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
                     except:
                         pass
 
@@ -853,19 +852,19 @@ class _Config:
         Lookup a person in the people array from their phone number.
         
         Parameters:
-            number (str): The phone number to look up, can be in various formats.
+        number (str): The phone number to look up, can be in various formats.
         
         Returns:
-            Person: The Person object if found, otherwise False.
+        Person: The Person object if found, otherwise False.
 
         Notes:
-            Lookup a person in people array from their phone number. Matches
-            the last 10 digits which is not perfect but good enough for me! 
+        Lookup a person in people array from their phone number. Matches
+        the last 10 digits which is not perfect but good enough for me! 
 
-            Why do this? because sometimes numbers are shown with "+1" for 
-            their country code and other times not. For example:
+        Why do this? because sometimes numbers are shown with "+1" for 
+        their country code and other times not. For example:
 
-            '2985551212' and '+12895551212"
+        '2985551212' and '+12895551212"
         """
 
         for the_person in self.people:
@@ -881,15 +880,15 @@ class _Config:
         Lookup a person in the people array from their full name.
         
         Parameters:
-            name (str): The full name of the person to look up.
+        name (str): The full name of the person to look up.
 
         Returns:
-            Person: The Person object if found, otherwise False.
+        Person: The Person object if found, otherwise False.
             
         Notes:
-            Added this for Signal contacts that use "Private" mode which 
-            hides their phone number. In that case, we can refer to their 
-            `profileFullName' field
+        Added this for Signal contacts that use "Private" mode which 
+        hides their phone number. In that case, we can refer to their 
+        `profileFullName' field
         """
         if name:
             for the_person in self.people:
@@ -910,10 +909,10 @@ class _Config:
         Lookup a person in the people array from their LinkedIn ID.
 
         Parameters:
-            id (str): The LinkedIn ID to look up.
+        id (str): The LinkedIn ID to look up.
         
         Returns:
-            Person: The Person object if found, otherwise False.
+        Person: The Person object if found, otherwise False.
         """
 
         if not len(id):
@@ -921,7 +920,7 @@ class _Config:
 
         for the_person in self.people:
             try:
-                if the_person.linkedin_id == id:
+                if the_person.socials.linkedin_id == id:
                     return the_person
             except Exception as e:
                 print("Error looking up person by LinkedIn ID.")
@@ -933,13 +932,13 @@ class _Config:
         Lookup a person in the people array from their conversation ID.
         
         Parameters:
-            id (str): The conversation ID to look up.
+        id (str): The conversation ID to look up.
         
         Returns:
-            Person: The Person object if found, otherwise False.
+        Person: The Person object if found, otherwise False.
 
         Notes:
-            @todo: if this is specific to Signal, should not be here
+        @todo: if this is specific to Signal, should not be here
         
         """
 
@@ -969,10 +968,10 @@ class _Config:
         Get a string from the strings array based on its number and language.
         
         Parameters:
-            string_number (str): The string number to look up.  
+        string_number (str): The string number to look up.  
         
         Returns:
-            str: The string text if found, otherwise an empty string.
+        str: The string text if found, otherwise an empty string.
         """
 
         result = ""
@@ -990,11 +989,13 @@ class _Config:
     def create_media_folder(self, filename, slug):
         """
         Create a media folder for the given filename and return the path.
+        
         Parameters:
-            filename (str): The name of the file to create a folder for
-            slug (str): The slug of the person or group to create folder for
+        filename (str): The name of the file to create a folder for
+        slug (str): The slug of the person or group to create folder for
+        
         Returns:
-            str: The path to the media folder where the file will be stored.
+        str: The path to the media folder where the file will be stored.
         """
 
         # find the place to put it
