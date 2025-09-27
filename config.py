@@ -265,9 +265,13 @@ class _Config:
 
             try:
                 settings_file = open(settings_filename, 'r')
+            except FileNotFoundError:
+                logging.info(f"Settings file {settings_filename} not found, using default settings")
+                # Create default settings or handle gracefully
+                return
             except Exception as e:
-                logging(f"open(settings_filename) Error: {e}")
-
+                logging.error(f"Error opening settings file {settings_filename}: {e}")
+                return
             if settings_file:
 
                 self.settings = json.load(settings_file)
@@ -322,7 +326,7 @@ class _Config:
                 settings_file.close()
 
         except Exception as e:
-            logging(f"Error loading settings: {e}")
+            logging.error(f"Error loading settings: {e}") 
             pass
 
         return result
@@ -333,7 +337,7 @@ class _Config:
         me.first_name = the_person.first_name
         me.last_name = the_person.last_name
         me.mobile = the_person.contact.mobile
-        me.linkedin_id = the_person.linkedin_id
+        me.linkedin_id = the_person.socials.linkedin_id
         me.email_addresses = the_person.email_addresses
         me.conversation_id = the_person.conversation_id
         me.folder_created = the_person.folder_created
@@ -347,47 +351,47 @@ class _Config:
         parser = ArgumentParser()
 
         parser.add_argument("-c", "--config", dest="config_folder", default=".",
-                            help=self.STR_CONFIG_FOLDER)
+                            help=self.get_str(self.STR_CONFIG_FOLDER))
         
         parser.add_argument("-s", "--source_folder", dest="source_folder", default=".",
-                            help=self.STR_SOURCE_FOLDER)
+                            help=self.get_str(self.STR_SOURCE_FOLDER))
         
         parser.add_argument("-f", "--file", dest="filename",
-                            help=self.STR_SOURCE_MESSAGE_FILE, metavar="FILE")
+                            help=self.get_str(self.STR_SOURCE_MESSAGE_FILE), metavar="FILE")
         
         parser.add_argument("-o", "--output_folder", dest="output_folder", default=".",
-                            help=self.STR_OUTPUT_FOLDER)
+                            help=self.get_str(self.STR_OUTPUT_FOLDER))
         
         parser.add_argument("-l", "--language", dest="language", default="1",
-                            help=self.STR_LANGUAGE_SETTING)
+                            help=self.get_str(self.STR_LANGUAGE_SETTING))
         
         parser.add_argument("-m", "--my_slug", dest="my_slug", default="",
-                            help=self.STR_MY_SLUG_SETTING)
+                            help=self.get_str(self.STR_MY_SLUG_SETTING))
         
         parser.add_argument("-d", "--debug",
                             action="store_true", dest="debug", default=False,
-                            help=self.STR_DONT_PRINT_DEBUG_MSGS)
+                            help=self.get_str(self.STR_DONT_PRINT_DEBUG_MSGS))
         
         parser.add_argument("-b", "--begin", dest="from_date", default="",
-                            help=self.STR_FROM_DATE)
+                            help=self.get_str(self.STR_FROM_DATE))
         
         parser.add_argument("-i", "--imap", dest="imap_server", default="",
-                            help=self.STR_IMAP_SERVER)
+                            help=self.get_str(self.STR_IMAP_SERVER))
         
         parser.add_argument("-e", "--email", dest="email_account", default="",
-                            help=self.STR_EMAIL_ACCOUNT)
+                            help=self.get_str(self.STR_EMAIL_ACCOUNT))
 
         parser.add_argument("-p", "--password", dest="password", default="",
-                            help=self.STR_PASSWORD)
+                            help=self.get_str(self.STR_PASSWORD))
         
         parser.add_argument("-r", "--folders", dest="password", default="",
-                            help=self.STR_EMAIL_FOLDERS)
+                            help=self.get_str(self.STR_EMAIL_FOLDERS))
         
         parser.add_argument("-x", "--max", dest="max_messages", default="",
-                            help=self.STR_MAX_MESSAGES)
+                            help=self.get_str(self.STR_MAX_MESSAGES))
         
         parser.add_argument("-a", "--add", action="store_true", dest="create_people", default="",
-                            help=self.STR_CREATE_PEOPLE)
+                            help=self.get_str(self.STR_CREATE_PEOPLE))
         
         args = parser.parse_args()
 
