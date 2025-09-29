@@ -203,7 +203,7 @@ class _Config:
         self.folder_per_erson = True
         self.file_per_person = True
         self.file_per_day = True
-        self.from_date = '1900-01-01'  # Default to beginning of time instead of today
+        self.from_date = datetime.strftime(datetime.now(), '%Y-%m-%d')
         self.imap_server = ""
         self.email_account = ""
         self.email_folders = ""
