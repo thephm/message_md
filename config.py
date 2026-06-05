@@ -426,6 +426,14 @@ class _Config:
 
         self.load_settings()
 
+        # Keep the raw archive setting so it can be safely recomputed if
+        # command-line options override the source folder.
+        archive_setting = None
+        try:
+            archive_setting = self.settings[self.SETTING_ARCHIVE_SUBFOLDER]
+        except Exception:
+            pass
+
         if args.debug:
             self.debug = args.debug
 
@@ -459,6 +467,17 @@ class _Config:
 
         if args.create_people:
             self.create_people = args.create_people
+
+        # Recompute archive folder using the final source folder.
+        # load_settings() computes this before command-line overrides, which can
+        # otherwise leave stale paths like ../../messages/archive.
+        if archive_setting:
+            if os.path.isabs(archive_setting):
+                self.archive_subfolder = archive_setting
+            else:
+                self.archive_subfolder = os.path.join(self.source_folder, archive_setting)
+        elif not os.path.isabs(self.archive_subfolder):
+            self.archive_subfolder = os.path.join(self.source_folder, self.archive_subfolder)
 
         if self.load_strings():
             if self.load_mime_types():

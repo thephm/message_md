@@ -7,6 +7,7 @@
     "text/css":"css",
     "text/vcard":"vcf",
     "text/x-vCard":"vcf",
+    "text/x-signal-plain":"txt",
     "image/jpeg":"jpeg",
     "image/jpg":"jpg",
     "image/gif":"gif",

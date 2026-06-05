@@ -56,15 +56,17 @@ def setup_folders(the_config):
     dest_file = os.path.join(the_config.archive_subfolder, filename)
     try:
         if the_config.debug:
-            shutil.copy(messages_file, dest_file)
+            # copyfile avoids metadata/permission propagation that can fail on
+            # WSL DrvFS mounts (e.g., /mnt/c) with EPERM.
+            shutil.copyfile(messages_file, dest_file)
         elif os.path.exists(the_config.archive_subfolder):
             shutil.move(messages_file, dest_file)
 
     except Exception as e:
         if the_config.debug:
-            logging.error(f"{the_config.get_str(the_config.STR_COULD_NOT_MOVE_MESSAGES_FILE)}: {messages_file} -> {dest_file}. Error: {e}")
-        else:
             logging.error(f"{the_config.get_str(the_config.STR_COULD_NOT_COPY_MESSAGES_FILE)}: {messages_file} -> {dest_file}. Error: {e}")
+        else:
+            logging.error(f"{the_config.get_str(the_config.STR_COULD_NOT_MOVE_MESSAGES_FILE)}: {messages_file} -> {dest_file}. Error: {e}")
         pass
 
     return dest_file
