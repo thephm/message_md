@@ -74,12 +74,16 @@ class Attachment:
         else:
             filename = self.id
 
+        image_width = the_config.image_width
+        if filename and "Screenshot" in filename:
+            image_width = 250
+
         if len(filename):
             if self.is_image() and the_config.image_embed:
                 link = "!"
             link += "[[" + filename
-            if self.is_image() and the_config.image_width:
-                link += "|" + str(the_config.image_width)
+            if self.is_image() and image_width:
+                link += "|" + str(image_width)
             link += "]]" + NEW_LINE
 
         return link

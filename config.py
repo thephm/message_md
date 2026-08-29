@@ -26,6 +26,12 @@ RESOURCES_FOLDER = "../../github/message_md/resources"
 
 IGNORE_SLUG = "ignore"
 
+
+def _compatible_person_field(json_person, canonical_key, legacy_key):
+    if canonical_key in json_person:
+        return json_person[canonical_key]
+    return json_person[legacy_key]
+
 # not used yet, thinking about it
 class Setting:
     def __init__(self):
@@ -143,14 +149,15 @@ class _Config:
 
         # fields in people file (PEOPLE_FILE_NAME)
         self.PERSON_FIELD_SLUG = "slug"
-        self.PERSON_FIELD_FIRST_NAME = "first-name"
-        self.PERSON_FIELD_LAST_NAME = "last-name"
+        self.PERSON_FIELD_FIRST_NAME = "first_name"
+        self.PERSON_FIELD_LAST_NAME = "last_name"
         self.PERSON_FIELD_IGNORE = "ignore"
-        self.PERSON_FIELD_FULL_NAME = "profile-full-name"
+        self.PERSON_FIELD_FULL_NAME = "profile_full_name"
         self.PERSON_FIELD_MOBILE = "mobile"
         self.PERSON_FIELD_EMAIL = "email"
-        self.PERSON_FIELD_LINKEDIN_ID = "linkedin-id"
-        self.PERSON_FIELD_CONVERSATION_ID = "conversation-id"
+        self.PERSON_FIELD_EMAILS = "emails"
+        self.PERSON_FIELD_LINKEDIN_ID = "linkedin_id"
+        self.PERSON_FIELD_CONVERSATION_ID = "conversation_id"
 
         # fields in groups file (GROUPS_FILE_NAME)
         self.GROUP_COLLECTION = "groups"
@@ -643,7 +650,7 @@ class _Config:
 
     def get_first_name_by_slug(self, slug):
         """
-        Lookup a person's first-name from their slug.
+        Lookup a person's first_name from their slug.
         """
 
         first_name = ""
@@ -753,17 +760,29 @@ class _Config:
 
                     # the person can optionally have these fields
                     try:
-                        the_person.first_name = json_person[self.PERSON_FIELD_FIRST_NAME]
+                        the_person.first_name = _compatible_person_field(
+                            json_person,
+                            self.PERSON_FIELD_FIRST_NAME,
+                            "first-name",
+                        )
                     except:
                         pass
                     
                     try:
-                        the_person.last_name = json_person[self.PERSON_FIELD_LAST_NAME]
+                        the_person.last_name = _compatible_person_field(
+                            json_person,
+                            self.PERSON_FIELD_LAST_NAME,
+                            "last-name",
+                        )
                     except:
                         pass
 
                     try:                            
-                        the_person.identity.full_name = json_person[self.PERSON_FIELD_FULL_NAME]
+                        the_person.identity.full_name = _compatible_person_field(
+                            json_person,
+                            self.PERSON_FIELD_FULL_NAME,
+                            "profile-full-name",
+                        )
                     except:
                         pass
 
@@ -777,7 +796,11 @@ class _Config:
                             the_person.identity.full_name = the_identity.last_name
 
                     try:
-                        the_person.socials.linkedin_id = json_person[self.PERSON_FIELD_LINKEDIN_ID]
+                        the_person.socials.linkedin_id = _compatible_person_field(
+                            json_person,
+                            self.PERSON_FIELD_LINKEDIN_ID,
+                            "linkedin-id",
+                        )
                     except:
                         pass
 
@@ -787,13 +810,26 @@ class _Config:
                         the_person.contact.mobile = mobile
                     
                     try:
-                        email_addresses = json_person[self.PERSON_FIELD_EMAIL].lower()
-                        the_person.email_addresses = email_addresses.split(";")
+                            email_addresses = json_person.get(
+                                self.PERSON_FIELD_EMAILS,
+                                json_person.get(self.PERSON_FIELD_EMAIL, ""),
+                            )
+                            if isinstance(email_addresses, str):
+                                email_addresses = email_addresses.split(";")
+                            the_person.email_addresses = [
+                                email_address.lower()
+                                for email_address in email_addresses
+                                if email_address
+                            ]
                     except:
                         pass #not everyone needs one of thesex
 
                     try:
-                        the_person.conversation_id = json_person[self.PERSON_FIELD_CONVERSATION_ID]
+                        the_person.conversation_id = _compatible_person_field(
+                            json_person,
+                            self.PERSON_FIELD_CONVERSATION_ID,
+                            "conversation-id",
+                        )
                     except:
                         pass # not everyone will have one of these
 

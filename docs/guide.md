@@ -15,12 +15,15 @@ Add each of the people you communicate with into `config\people.json` file with 
 ### Fields
 
 - `slug` - one-word or hyphenated-words uniquely identifying this person
-- `first-name` - the person's first name
-- `last-name` - the person's last name
+- `first_name` - the person's first name
+- `last_name` - the person's last name
+- `profile_full_name` - the person's full display name, when it differs from the first and last name fields
 - `ignore` - optional and `False` to include or `True` to exclude from the output
 - `mobile` - the phone number field in the `signald` output file
-- `linkedin-id` - the last part of their LinkedIn profile URL
-- `conversation-id` - required for [signal_sqlite_md](https://github.com/thephm/signal_sqlite_md/tree/main)
+- `linkedin_id` - the last part of their LinkedIn profile URL
+- `conversation_id` - required for [signal_sqlite_md](https://github.com/thephm/signal_sqlite_md/tree/main)
+
+Legacy hyphenated person keys are still accepted when loading existing config files.
 
 ### Example
 
@@ -28,19 +31,19 @@ Add each of the people you communicate with into `config\people.json` file with 
 [
 {
     "slug":"spongebob",
-    "first-name":"SpongeBob",
-    "last-name":"SquarePants", 
-    "mobile":"+14165551212", 
-    "linkedin-id":"spbob", 
-    "conversation-id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"
-}
+    "first_name":"SpongeBob",
+    "last_name":"SquarePants",
+    "mobile":"+14165551212",
+    "linkedin_id":"spbob",
+    "conversation_id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"
+},
 {
     "slug":"mr-krabs",
-    "first-name":"Eugene", 
-    "first-name":"Krabs",
-    "ignore": "True", 
-    "mobile":"+12895551313", 
-    "linkedin-id":"mrkrab", "conversation-id":"d84d84b4-41b8-4044-93a6-2b47cd347e25"}
+    "first_name":"Eugene",
+    "last_name":"Krabs",
+    "ignore": "True",
+    "mobile":"+12895551313",
+    "linkedin_id":"mrkrab", "conversation_id":"d84d84b4-41b8-4044-93a6-2b47cd347e25"}
 ]
 ```
 
@@ -123,7 +126,7 @@ The `my-slug` setting defines which person (row) represents you in `people.json`
 If this was me in `people.json`:
 
 ```
-{"person-slug":"spongebob","first-name":"SpongeBob", "last-name":"SquarePants", "number":"+14165551212", "linkedin-id":"spbob", "conversation-id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"}
+{"slug":"spongebob","first_name":"SpongeBob", "last_name":"SquarePants", "mobile":"+14165551212", "linkedin_id":"spbob", "conversation_id": "1bd7281f-45b4-4e95-a638-a84af8743ec6"}
 ```
 
 Then I would set this field as follows in `settings.json`:

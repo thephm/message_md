@@ -24,6 +24,7 @@
     "video/3gpp":"3gp",
     "audio/basic":"au",
     "audio/mid":"mid",
+    "audio/mpeg":"mp3",
     "audio/mp4":"mp4",
     "audio/x-m4a":"m4a",
     "audio/x-m4b":"m4b",
