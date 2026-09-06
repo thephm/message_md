@@ -1,7 +1,8 @@
 import json
 import os
 import sys
-    
+import re
+
 import markdown
 import logging
 
@@ -805,9 +806,13 @@ class _Config:
                         pass
 
                     mobile = json_person.get(self.PERSON_FIELD_MOBILE)
-                    if mobile:
-                        mobile = mobile.replace('+', '').replace('-', '')
-                        the_person.contact.mobile = mobile
+                    normalized_mobile = self.normalize_mobile(mobile)
+                    if normalized_mobile:
+                        the_person.contact.mobile = normalized_mobile
+                    elif isinstance(mobile, str) and ("@" in mobile or any(ch.isalpha() for ch in mobile)):
+                        # Ignore malformed mobile values such as email addresses.
+                        # They belong in the email fields, not the phone field.
+                        pass
                     
                     try:
                             email_addresses = json_person.get(
@@ -892,6 +897,182 @@ class _Config:
 
         return len(self.groups)
     
+    def normalize_mobile(self, number):
+        if not number:
+            return ""
+        number = str(number).strip()
+        if not number:
+            return ""
+        if "@" in number or re.search(r"[A-Za-z]", number):
+            return ""
+        digits = re.sub(r"\D", "", number)
+        if len(digits) == 11 and digits.startswith("1"):
+            digits = digits[1:]
+        if len(digits) < 7:
+            return ""
+        return digits
+
+    def save_people(self):
+        try:
+            os.makedirs(self.config_folder, exist_ok=True)
+            people_file = os.path.join(self.config_folder, PEOPLE_FILE_NAME)
+            json_people = []
+            for the_person in self.people:
+                if the_person.ignore and not the_person.slug:
+                    continue
+                person_data = {
+                    self.PERSON_FIELD_SLUG: the_person.slug,
+                    self.PERSON_FIELD_FIRST_NAME: the_person.identity.first_name,
+                    self.PERSON_FIELD_LAST_NAME: the_person.identity.last_name,
+                    self.PERSON_FIELD_FULL_NAME: the_person.identity.full_name,
+                }
+                if getattr(the_person, "ignore", False):
+                    person_data[self.PERSON_FIELD_IGNORE] = True
+                normalized_mobile = self.normalize_mobile(getattr(the_person.contact, "mobile", ""))
+                if normalized_mobile:
+                    person_data[self.PERSON_FIELD_MOBILE] = normalized_mobile
+                if the_person.email_addresses:
+                    if len(the_person.email_addresses) == 1:
+                        person_data[self.PERSON_FIELD_EMAIL] = the_person.email_addresses[0]
+                    else:
+                        person_data[self.PERSON_FIELD_EMAILS] = the_person.email_addresses
+                if the_person.socials.linkedin_id:
+                    person_data[self.PERSON_FIELD_LINKEDIN_ID] = the_person.socials.linkedin_id
+                if the_person.conversation_id:
+                    person_data[self.PERSON_FIELD_CONVERSATION_ID] = the_person.conversation_id
+                json_people.append(person_data)
+            with open(people_file, 'w', encoding='utf-8') as handle:
+                json.dump(json_people, handle, indent=2, ensure_ascii=False)
+            return True
+        except Exception as e:
+            print(f"Error saving people: {e}")
+            return False
+
+    def write_person_markdown_template(self, the_person, source="Signal"):
+        template_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+            "hal_md",
+            "templates",
+            "Person.md",
+        )
+        if not os.path.exists(template_path):
+            return ""
+
+        content = open(template_path, 'r', encoding='utf-8').read()
+        content = content.replace("first_name:\nlast_name:", f"first_name: {the_person.identity.first_name or ''}\nlast_name: {the_person.identity.last_name or ''}")
+        content = content.replace("slug:", f"slug: {the_person.slug}")
+        if the_person.identity.full_name:
+            content = content.replace("# Person", f"# {the_person.identity.full_name}")
+        if the_person.contact.mobile:
+            content = content.replace("mobile: ", f"mobile: {self.normalize_mobile(the_person.contact.mobile)} ")
+        if the_person.email_addresses:
+            content = content.replace("email: ", f"email: {the_person.email_addresses[0]} ")
+        if the_person.socials.linkedin_id:
+            content = content.replace("linkedin_id: ", f"linkedin_id: {the_person.socials.linkedin_id} ")
+            if "1." in content:
+                content = content.replace("1.\n", f"1. [LinkedIn](https://www.linkedin.com/in/{the_person.socials.linkedin_id})\n", 1)
+        if "## Notes" in content:
+            date_today = datetime.today().strftime("%Y-%m-%d")
+            notes_line = f"- {date_today}: added from {source}"
+            content = content.replace("## Notes\n-", f"## Notes\n{notes_line}\n-", 1)
+
+        output_folder = os.path.join(self.output_folder, self.people_subfolder)
+        os.makedirs(output_folder, exist_ok=True)
+        person_file = os.path.join(output_folder, the_person.slug + ".md")
+        with open(person_file, 'w', encoding='utf-8') as handle:
+            handle.write(content)
+        return person_file
+
+    def get_or_create_person(self, full_name="", mobile="", email="", linkedin_id="", conversation_id="", source="Signal", prompt=True):
+        clean_name = (full_name or "").strip()
+        cleaned_email = (email or "").strip().lower()
+        cleaned_mobile = self.normalize_mobile(mobile)
+        cleaned_linkedin = (linkedin_id or "").strip()
+
+        if cleaned_email:
+            for the_person in self.people:
+                if cleaned_email in getattr(the_person, "email_addresses", []):
+                    return the_person
+        if cleaned_mobile:
+            normalized_number = self.normalize_mobile(cleaned_mobile)
+            for the_person in self.people:
+                if self.normalize_mobile(getattr(the_person.contact, "mobile", ""))[-10:] == normalized_number[-10:]:
+                    return the_person
+        if cleaned_linkedin:
+            for the_person in self.people:
+                if getattr(the_person.socials, "linkedin_id", "") == cleaned_linkedin:
+                    return the_person
+        if clean_name:
+            for the_person in self.people:
+                if getattr(the_person.identity, "full_name", "") == clean_name:
+                    return the_person
+
+        if not self.create_people:
+            return False
+
+        action = "a"
+        if prompt:
+            name_hint = clean_name or cleaned_email or cleaned_mobile or cleaned_linkedin or "unknown person"
+            choice = input(f"Person not found: {name_hint}. [i]gnore, [a]dd? ").strip().lower()
+            while choice not in ["i", "a", ""]:
+                choice = input("Choose [i]gnore or [a]dd: ").strip().lower()
+            if choice in ["", "a"]:
+                action = "a"
+            else:
+                action = "i"
+
+        if action == "i":
+            return False
+
+        new_person = person.Person()
+        if clean_name:
+            names = clean_name.split()
+            if len(names) >= 2:
+                new_person.identity.first_name = names[0]
+                new_person.identity.last_name = " ".join(names[1:])
+            else:
+                new_person.identity.first_name = clean_name
+            new_person.identity.full_name = clean_name
+        elif cleaned_email:
+            new_person.identity.full_name = cleaned_email.split('@', 1)[0]
+        elif cleaned_mobile:
+            new_person.identity.full_name = cleaned_mobile
+        elif cleaned_linkedin:
+            new_person.identity.full_name = cleaned_linkedin
+        else:
+            new_person.identity.full_name = "Unknown Person"
+
+        if not new_person.identity.first_name and new_person.identity.full_name:
+            parts = new_person.identity.full_name.split()
+            if len(parts) > 1:
+                new_person.identity.first_name = parts[0]
+                new_person.identity.last_name = " ".join(parts[1:])
+            else:
+                new_person.identity.first_name = new_person.identity.full_name
+
+        base_slug = new_person.identity.generate_slug(new_person.identity.full_name)
+        candidate = base_slug or "unknown-person"
+        slug = candidate
+        counter = 2
+        while any(existing.slug == slug for existing in self.people):
+            slug = f"{candidate}-{counter}"
+            counter += 1
+        new_person.slug = slug
+
+        if cleaned_mobile:
+            new_person.contact.mobile = cleaned_mobile
+        if cleaned_email:
+            new_person.email_addresses = [cleaned_email]
+        if cleaned_linkedin:
+            new_person.socials.linkedin_id = cleaned_linkedin
+        if conversation_id:
+            new_person.conversation_id = conversation_id
+
+        self.people.append(new_person)
+        self.save_people()
+        self.write_person_markdown_template(new_person, source=source)
+        return new_person
+
     def get_person_by_email(self, email_address):
         """
         Lookup a person in the people array from their email address.
@@ -927,13 +1108,16 @@ class _Config:
         '2985551212' and '+12895551212"
         """
 
+        normalized_number = self.normalize_mobile(number)
         for the_person in self.people:
             if len(the_person.contact.mobile):
                 try:
-                    if the_person.contact.mobile[-10:] == number[-10:]:
+                    if self.normalize_mobile(the_person.contact.mobile)[-10:] == normalized_number[-10:]:
                         return the_person
                 except:
                     return False
+
+        return False
             
     def get_person_by_full_name(self, name):
         """
@@ -986,6 +1170,8 @@ class _Config:
                 print("Error looking up person by LinkedIn ID.")
                 print(e)
                 return False
+
+        return False
             
     def get_person_by_conversation_id(self, id):
         """

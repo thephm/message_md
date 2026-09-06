@@ -35,6 +35,7 @@ TAG_CHAT = "chat"
 TAG_EMAIL = "email"
 YAML_SUBJECT = "subject"
 YAML_MESSAGE_ID = "message-id"
+URL_QUERY_STRING_PATTERN = re.compile(r"(https?://[^\s?]+)\?[^\s<>()\]>]*")
 
 errored_people = []
 
@@ -347,7 +348,8 @@ def format_markdown(the_message, the_config, people):
 
     # quote all lines in the body
     if len(the_message.body):
-        body_lines = the_message.body.split('\n')
+        body = URL_QUERY_STRING_PATTERN.sub(r"\1", the_message.body)
+        body_lines = body.split('\n')
         quoted_body = '\n'.join([MD_QUOTE + line for line in body_lines])
         text += quoted_body + NEW_LINE
 
