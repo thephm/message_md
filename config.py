@@ -815,11 +815,12 @@ class _Config:
                                 json_person.get(self.PERSON_FIELD_EMAIL, ""),
                             )
                             if isinstance(email_addresses, str):
-                                email_addresses = email_addresses.split(";")
+                                separator = "," if self.PERSON_FIELD_EMAILS in json_person else ";"
+                                email_addresses = email_addresses.split(separator)
                             the_person.email_addresses = [
-                                email_address.lower()
+                                email_address.strip().lower()
                                 for email_address in email_addresses
-                                if email_address
+                                if email_address.strip()
                             ]
                     except:
                         pass #not everyone needs one of thesex
