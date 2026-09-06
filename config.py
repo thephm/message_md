@@ -804,7 +804,7 @@ class _Config:
                     except:
                         pass
 
-                    mobile = json_person[self.PERSON_FIELD_MOBILE]
+                    mobile = json_person.get(self.PERSON_FIELD_MOBILE)
                     if mobile:
                         mobile = mobile.replace('+', '').replace('-', '')
                         the_person.contact.mobile = mobile
