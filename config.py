@@ -346,6 +346,8 @@ class _Config:
         me.slug = the_person.slug
         me.first_name = the_person.first_name
         me.last_name = the_person.last_name
+        me.identity.full_name = the_person.identity.full_name
+        me.contact.mobile = the_person.contact.mobile
         me.mobile = the_person.contact.mobile
         me.linkedin_id = the_person.socials.linkedin_id
         me.email_addresses = the_person.email_addresses
@@ -780,7 +782,7 @@ class _Config:
                             json_person,
                             self.PERSON_FIELD_FIRST_NAME,
                             "first-name",
-                        )
+                        ) or ""
                     except:
                         pass
                     
@@ -789,7 +791,7 @@ class _Config:
                             json_person,
                             self.PERSON_FIELD_LAST_NAME,
                             "last-name",
-                        )
+                        ) or ""
                     except:
                         pass
 
@@ -798,7 +800,7 @@ class _Config:
                             json_person,
                             self.PERSON_FIELD_FULL_NAME,
                             "profile-full-name",
-                        )
+                        ) or ""
                     except:
                         pass
 
@@ -810,6 +812,14 @@ class _Config:
                             the_person.identity.full_name = the_identity.first_name
                         elif the_identity.last_name:
                             the_person.identity.full_name = the_identity.last_name
+
+                    if not the_person.first_name and the_identity.full_name.strip():
+                        the_person.first_name = the_identity.full_name.split()[0]
+                        logging.warning(
+                            "Person %r has no configured first_name; using %r from "
+                            "profile_full_name for message headers.",
+                            the_person.slug, the_person.first_name,
+                        )
 
                     try:
                         the_person.socials.linkedin_id = _compatible_person_field(

@@ -25,6 +25,8 @@ Add each of the people you communicate with into `config\people.json` file with 
 
 Legacy hyphenated person keys are still accepted when loading existing config files.
 
+Names are stored in HAL's `Person.identity`; the legacy `Person.first_name` and `Person.last_name` accessors refer to those same fields, so saving and reloading configuration preserves names. If `first_name` is empty but `profile_full_name` is present, its first word is used for message headers with a warning. A sender with neither name is skipped with an error, including outside debug mode.
+
 ### Example
 
 ```
@@ -383,4 +385,3 @@ Sets the number of messages to convert.
 There's special handling for Note-to-Self:
 
 - `<firstName at>` are never shown so those settings don't have any affect
-

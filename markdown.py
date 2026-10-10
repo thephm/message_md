@@ -317,12 +317,15 @@ def format_markdown(the_message, the_config, people, include_context=True):
         # I've seen cases with SMS Backup where `from_address="null"` and,
         # in turn, code can't get a source slug, so we skip the message
         if not first_name:
-            if the_config.debug and from_slug not in errored_people:
+            if from_slug not in errored_people:
                 error_str = the_config.get_str(the_config.STR_NO_FIRST_NAME_FOR_SLUG)
                 errored_people.append(from_slug)
-                logging.error(f"{error_str} '{from_slug}'")
-                print(the_message)
-            return text
+                logging.error(
+                    "Skipping message: no first name for sender %r. "
+                    "Set first_name or profile_full_name in people.json. %s",
+                    from_slug, error_str,
+                )
+            return ""
 
         # don't include first name if Note-to-Self since I know who I am!
         if not the_message.is_note_to_self():
