@@ -159,6 +159,7 @@ class _Config:
         self.PERSON_FIELD_EMAILS = "emails"
         self.PERSON_FIELD_LINKEDIN_ID = "linkedin_id"
         self.PERSON_FIELD_CONVERSATION_ID = "conversation_id"
+        self.PERSON_FIELD_SIGNAL_ACI = "signal_aci"
 
         # fields in groups file (GROUPS_FILE_NAME)
         self.GROUP_COLLECTION = "groups"
@@ -167,6 +168,7 @@ class _Config:
         self.GROUP_FIELD_DESCRIPTION = "description"
         self.GROUP_FIELD_PEOPLE = "people"
         self.GROUP_FIELD_CONVERSATION_ID = "conversation-id"
+        self.GROUP_FIELD_SIGNAL_GROUP_KEY = "signal-group-key"
 
         # within array of person fields (after loaded)
         # #todo this is STUPID and needs to be removed!
@@ -720,6 +722,19 @@ class _Config:
                 slug = the_group.slug
         
         return slug
+
+    def get_group_slug_by_signal_group_key(self, key):
+        """
+        Lookup the group slug based on a Signal group-key fingerprint.
+        """
+        if not key:
+            return ""
+
+        for the_group in self.groups:
+            if the_group.signal_group_key == key:
+                return the_group.slug
+
+        return ""
     
     def parse_email(the_person, data):
         """
@@ -805,6 +820,10 @@ class _Config:
                     except:
                         pass
 
+                    the_person.socials.signal_aci = json_person.get(
+                        self.PERSON_FIELD_SIGNAL_ACI, ""
+                    ) or ""
+
                     mobile = json_person.get(self.PERSON_FIELD_MOBILE)
                     normalized_mobile = self.normalize_mobile(mobile)
                     if normalized_mobile:
@@ -881,6 +900,9 @@ class _Config:
                         the_group.conversation_id = json_group[self.GROUP_FIELD_CONVERSATION_ID]
                     except:
                         pass
+                    the_group.signal_group_key = json_group.get(
+                        self.GROUP_FIELD_SIGNAL_GROUP_KEY, ""
+                    ) or ""
                     try:
                         the_group.members = [person_slug for person_slug in json_group[self.GROUP_FIELD_PEOPLE]]
                         self.groups.append(the_group)
@@ -938,6 +960,8 @@ class _Config:
                         person_data[self.PERSON_FIELD_EMAILS] = the_person.email_addresses
                 if the_person.socials.linkedin_id:
                     person_data[self.PERSON_FIELD_LINKEDIN_ID] = the_person.socials.linkedin_id
+                if the_person.socials.signal_aci:
+                    person_data[self.PERSON_FIELD_SIGNAL_ACI] = the_person.socials.signal_aci
                 if the_person.conversation_id:
                     person_data[self.PERSON_FIELD_CONVERSATION_ID] = the_person.conversation_id
                 json_people.append(person_data)
@@ -1170,6 +1194,19 @@ class _Config:
                 print("Error looking up person by LinkedIn ID.")
                 print(e)
                 return False
+
+        return False
+
+    def get_person_by_signal_aci(self, aci):
+        """
+        Lookup a person in the people array from their Signal ACI.
+        """
+        if not aci:
+            return False
+
+        for the_person in self.people:
+            if the_person.socials.signal_aci == aci:
+                return the_person
 
         return False
             

@@ -6,6 +6,7 @@ class Group:
         self.slug = ""
         self.description = ""
         self.conversation_id = ""
+        self.signal_group_key = ""
         self.members = []  # collection of `Person.slug`s
         self.messages = [] # collection of messages by day
 
@@ -15,5 +16,6 @@ class Group:
         output += "description: " + self.description + NEW_LINE
         output += "members: " + str(self.members) + NEW_LINE
         output += "messages: " + str(len(self.messages)) + NEW_LINE
-        output += "conversation_id: " + self.conversation_id
+        output += "conversation_id: " + self.conversation_id + NEW_LINE
+        output += "signal_group_key: " + self.signal_group_key
         return output

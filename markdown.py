@@ -115,49 +115,69 @@ def create_markdown_files(entity, folder, the_config):
         time, subject, service, and tags.   
     """
 
-    exists = False
-    
     for dated_messages in entity.messages:
-
+        rendered_messages = []
+        filename = ""
         for the_message in dated_messages.messages:
 
             if the_config.from_date and (the_message.date_str[:10] < the_config.from_date):
                 continue
 
-            # convert to Markdown and if no message, move on to the next one
-            the_markdown = format_markdown(the_message, the_config, entity)
-            if not len(the_markdown):
-                continue
-
             # where the output files will go
-            filename = the_message.date_str + OUTPUT_FILE_EXTENSION
+            message_filename = the_message.date_str + OUTPUT_FILE_EXTENSION
 
             if the_message.is_note_to_self():
                 daily_notes_folder = create_daily_notes_folders(the_config)
-                filename = os.path.join(daily_notes_folder, filename)
+                message_filename = os.path.join(daily_notes_folder, message_filename)
             else: 
                 create_thing_folder(entity, the_config)
-                filename = os.path.join(folder, filename)
+                message_filename = os.path.join(folder, message_filename)
             
-            exists = os.path.exists(filename)
+            exists = os.path.exists(message_filename)
+            age = time.time() - os.path.getctime(message_filename) if exists else 0
+            if exists and age >= WELL_AGED and not the_message.is_note_to_self():
+                continue
 
-            output_file = open_output_file(filename, the_config)
-            
-            if output_file:
-                if exists == False:
-                    frontmatter = get_frontmatter(the_message, the_config)
-                    output_file.write(frontmatter)
+            previous_message = rendered_messages[-1][0] if rendered_messages else None
+            same_sender = (
+                previous_message is not None
+                and previous_message.from_slug
+                and previous_message.from_slug == the_message.from_slug
+                and not previous_message.is_note_to_self()
+                and not the_message.is_note_to_self()
+            )
+            the_markdown = format_markdown(
+                the_message, the_config, entity, include_context=not same_sender
+            )
+            if not the_markdown:
+                continue
 
-                # don't add to the file if it's previously created
-                # UNLESS it's a note-to-self
-                age = time.time() - os.path.getctime(filename)
-                
-                if age < WELL_AGED or the_message.is_note_to_self():
-                    try:
-                        output_file.write(format_markdown(the_message, the_config, entity))
-                        output_file.close()
-                    except Exception as e:
-                        pass
+            if same_sender:
+                previous_markdown = rendered_messages[-1][1].rstrip(NEW_LINE)
+                separator = "" if the_message.attachments else MD_QUOTE
+                rendered_messages[-1] = (
+                    rendered_messages[-1][0],
+                    previous_markdown + NEW_LINE + separator + NEW_LINE,
+                )
+                the_markdown = the_markdown.lstrip(NEW_LINE)
+
+            rendered_messages.append((the_message, the_markdown))
+            filename = message_filename
+
+        if not rendered_messages:
+            continue
+
+        exists = os.path.exists(filename)
+        output_file = open_output_file(filename, the_config)
+        if output_file:
+            if not exists:
+                output_file.write(get_frontmatter(rendered_messages[0][0], the_config))
+            try:
+                output_file.write("".join(markdown for _, markdown in rendered_messages))
+            except Exception as e:
+                logging.error(f"Could not write Markdown file {filename}: {e}")
+            finally:
+                output_file.close()
 
 def open_output_file(filename, the_config):
     """
@@ -263,7 +283,7 @@ def get_frontmatter(the_message, the_config):
 
     return frontmatter
 
-def format_markdown(the_message, the_config, people):
+def format_markdown(the_message, the_config, people, include_context=True):
     """
     Format a Message object into Markdown text.
     
@@ -271,6 +291,7 @@ def format_markdown(the_message, the_config, people):
         the_message (Message): the message to format
         the_config (Config): an instance of Config containing configuration settings
         people ([Person]): a list of Person objects to get first names from
+        include_context (bool): Whether to include the sender and timestamp header.
         
     Returns:
         str: the formatted Markdown text for the message
@@ -282,47 +303,50 @@ def format_markdown(the_message, the_config, people):
     first_name = ""
     from_slug = the_message.from_slug
 
-    if the_config.time_name_separate:
-        text += NEW_LINE + the_message.time_str + NEW_LINE
+    if include_context:
+        if the_config.time_name_separate:
+            text += NEW_LINE + the_message.time_str + NEW_LINE
 
-    if len(from_slug):
-        first_name = the_config.get_first_name_by_slug(from_slug)
-    else: 
-        # assume it's from me
-        if the_config.me.slug not in the_message.to_slugs:
-            first_name = the_config.me.first_name
+        if len(from_slug):
+            first_name = the_config.get_first_name_by_slug(from_slug)
+        else:
+            # assume it's from me
+            if the_config.me.slug not in the_message.to_slugs:
+                first_name = the_config.me.first_name
 
-    # I've seen cases with SMS Backup where `from_address="null"` and,
-    # in turn, code can't get a source slug, so we skip the message
-    if not first_name:
-        if the_config.debug and from_slug not in errored_people:
-            error_str = the_config.get_str(the_config.STR_NO_FIRST_NAME_FOR_SLUG)
-            errored_people.append(from_slug)
-            logging.error(f"{error_str} '{from_slug}'")
-            print(the_message)
-        return text
+        # I've seen cases with SMS Backup where `from_address="null"` and,
+        # in turn, code can't get a source slug, so we skip the message
+        if not first_name:
+            if the_config.debug and from_slug not in errored_people:
+                error_str = the_config.get_str(the_config.STR_NO_FIRST_NAME_FOR_SLUG)
+                errored_people.append(from_slug)
+                logging.error(f"{error_str} '{from_slug}'")
+                print(the_message)
+            return text
 
-    # don't include first name if Note-to-Self since I know who I am!
-    if not the_message.is_note_to_self(): 
-        text += first_name
-
-    if not the_config.time_name_separate and the_config.include_timestamp:
+        # don't include first name if Note-to-Self since I know who I am!
         if not the_message.is_note_to_self():
-            text += " " + the_config.get_str(the_config.STR_AT) + " "
-        text += the_message.time_str
+            text += first_name
 
-    if the_config.colon_after_context: 
-        text += ":"
+        if not the_config.time_name_separate and the_config.include_timestamp:
+            if not the_message.is_note_to_self():
+                text += " " + the_config.get_str(the_config.STR_AT) + " "
+            text += the_message.time_str
 
-    if not the_config.time_name_separate: 
-        text += NEW_LINE
+        if the_config.colon_after_context:
+            text += ":"
+
+        if not the_config.time_name_separate:
+            text += NEW_LINE
 
     for the_attachment in the_message.attachments:
-        text += NEW_LINE
+        if include_context:
+            text += NEW_LINE
         link = the_attachment.generate_link(the_config)
         text += link
 
-    text += NEW_LINE
+    if include_context or the_message.attachments:
+        text += NEW_LINE
 
     try:
         quoted_text = the_message.quote.text
