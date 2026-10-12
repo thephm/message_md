@@ -381,7 +381,9 @@ def format_markdown(the_message, the_config, people, include_context=True):
         text += quoted_body + NEW_LINE
 
     if the_config.include_reactions and len(the_message.reactions):
-        text += MD_QUOTE + NEW_LINE + MD_QUOTE
+        if the_message.body or not the_message.attachments:
+            text += MD_QUOTE + NEW_LINE
+        text += MD_QUOTE
         for the_reaction in the_message.reactions:
             first_name = the_config.get_first_name_by_slug(the_reaction.from_slug)
             text += str(the_reaction.emoji) + " *" + first_name.lower() + "*   "
