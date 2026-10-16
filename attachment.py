@@ -79,7 +79,7 @@ class Attachment:
             image_width = 250
 
         if len(filename):
-            if self.is_image() and the_config.image_embed:
+            if (self.is_image() and the_config.image_embed) or self.type.startswith("video/"):
                 link = "!"
             link += "[[" + filename
             if self.is_image() and image_width:

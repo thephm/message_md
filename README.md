@@ -8,6 +8,14 @@ Also includes all the supporting classes for `Person`, `Group`, `Setting`, `Stri
 
 Read the [guide](docs/guide.md) to learn how to configure the library.
 
+Video attachments use embedded wikilinks (`![[video.mp4]]`). A media-only
+message and a following comment from the same sender are separated by a plain
+blank line; consecutive text comments keep their quoted separator.
+
+Existing conversation notes are left untouched on subsequent conversions,
+even immediately after creation. Note-to-self messages still append to daily
+notes.
+
 ## Command line options
 
 Any app that uses this library will inherit these command line options.

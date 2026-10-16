@@ -3,7 +3,6 @@
 
 import os
 import re
-import time
 import logging
 
 from pathlib import Path
@@ -17,7 +16,6 @@ SPACE = " "
 TWO_SPACES = SPACE + SPACE
 MD_QUOTE = ">" + SPACE
 NEW_LINE = "\n"
-WELL_AGED = 30 # seconds
 OUTPUT_FILE_EXTENSION = ".md"
 
 # YAML front matter 
@@ -109,8 +107,8 @@ def create_markdown_files(entity, folder, the_config):
     Notes:
         - Only create files for messages after `config.from_date` if there's 
         a date set
-        - Checks if the file already exists and only writes to it if it is not
-        too old (less than WELL_AGED seconds) or if the message is a note-to-self.
+        - Leaves existing conversation files untouched; note-to-self messages
+        can still be appended to daily notes.
         - Formats each message into Markdown, including metadata such as date, 
         time, subject, service, and tags.   
     """
@@ -134,8 +132,7 @@ def create_markdown_files(entity, folder, the_config):
                 message_filename = os.path.join(folder, message_filename)
             
             exists = os.path.exists(message_filename)
-            age = time.time() - os.path.getctime(message_filename) if exists else 0
-            if exists and age >= WELL_AGED and not the_message.is_note_to_self():
+            if exists and not the_message.is_note_to_self():
                 continue
 
             previous_message = rendered_messages[-1][0] if rendered_messages else None
@@ -154,7 +151,8 @@ def create_markdown_files(entity, folder, the_config):
 
             if same_sender:
                 previous_markdown = rendered_messages[-1][1].rstrip(NEW_LINE)
-                separator = "" if the_message.attachments else MD_QUOTE
+                ends_in_quote = previous_markdown.split(NEW_LINE)[-1].startswith(MD_QUOTE)
+                separator = MD_QUOTE if ends_in_quote and not the_message.attachments else ""
                 rendered_messages[-1] = (
                     rendered_messages[-1][0],
                     previous_markdown + NEW_LINE + separator + NEW_LINE,
